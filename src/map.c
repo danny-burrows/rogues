@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <string.h>
 #include "map.h"
 
 int set_map_size(MAP *map) {

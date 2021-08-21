@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include "saved_games.h"
-#include "game.h"
 
 int save_game(const Game * game) {
     FILE *write_ptr;

@@ -1,6 +1,7 @@
 #ifndef SAVE_HELPER
 #define SAVE_HELPER
 
+#include <stdio.h>
 #include "game.h"
 
 #define GAME_SAVE_PATH "./data/saves/eac.sav"

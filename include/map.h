@@ -1,6 +1,9 @@
 #ifndef MAP_HELPER
 #define MAP_HELPER
 
+#include <stdio.h>
+#include <string.h>
+
 #define MAX_MAP_SIZE 256 * 1024 // Max map size currently 256KB
 #define MAP_FILE_PATH "./data/map/map.ans"
 
@@ -18,6 +21,8 @@ and the length of the first line.
 */
 
 typedef struct  {
+    int x;
+    int y;
     int size;
     int width;
     int height;
