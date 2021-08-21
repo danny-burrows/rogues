@@ -20,13 +20,13 @@ enum Direction {
 };
 
 Game game = {
-    "v0.0.2",
-    0,
-    0,
-    {5, 6, 2, 1, 5, 6, 2, 1},
-    {1, 2, 1, 1, 0, 0, 0, 0},
-    {1, 1, 1, 1, 0, 0, 0, 0},
-    {0}
+    .version = "v0.0.3",
+    .running = 0,
+    .loaded = 0,
+    .box = {5, 6, 2, 1, 5, 6, 2, 1},
+    .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
+    .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
+    .map = {0}
 };
 
 void clear_term(void) 
