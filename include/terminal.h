@@ -1,5 +1,5 @@
-#ifndef TERMINAL_HELPER
-#define TERMINAL_HELPER
+#ifndef ROGUES_TERMINAL_H
+#define ROGUES_TERMINAL_H
 
 #include <string.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
-#ifndef MAP_HELPER
-#define MAP_HELPER
+#ifndef ROGUES_MAP_H
+#define ROGUES_MAP_H
 
 #include <stdio.h>
 #include <string.h>
@@ -21,8 +21,6 @@ and the length of the first line.
 */
 
 typedef struct  {
-    int x;
-    int y;
     int size;
     int width;
     int height;

@@ -1,5 +1,5 @@
-#ifndef UI_HELPER
-#define UI_HELPER
+#ifndef ROGUES_UI_H
+#define ROGUES_UI_H
 
 #include <stdio.h>
 

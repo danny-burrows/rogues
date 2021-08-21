@@ -9,6 +9,7 @@
 
 #include "ui.h"
 #include "map.h"
+#include "camera.h"
 #include "terminal.h"
 #include "saved_games.h"
 
@@ -20,12 +21,13 @@ enum Direction {
 };
 
 Game game = {
-    .version = "v0.0.4",
+    .version = "v0.0.5",
     .running = 0,
     .loaded = 0,
     .box = {5, 6, 2, 1, 5, 6, 2, 1},
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
+    .camera = {0},
     .map = {0}
 };
 
@@ -49,9 +51,9 @@ void draw_map(UI_BOX * container) {
         char * nextLine = strchr(curLine, '\n');
         if (nextLine) *nextLine = '\0';  // temporarily terminate the current line
         
-        if (line_no > game.map.y){
-            xstart = curLine + (game.map.x * 12);
-            xend = curLine + (game.map.x * 12) + (container->width * 12) - 1;
+        if (line_no > game.camera.y){
+            xstart = curLine + (game.camera.x * 12);
+            xend = curLine + (game.camera.x * 12) + (container->width * 12) - 1;
 
             char r = *xend;
             *xend = '\0';
@@ -99,26 +101,26 @@ void redraw_frame(void)
 }
 
 void teleport_player(int x, int y) {
-    game.map.x = x - (game.view_port.width / 2);
-    game.map.y = y - (game.view_port.height / 2);
+    game.camera.x = x - (game.view_port.width / 2);
+    game.camera.y = y - (game.view_port.height / 2);
 
-    if (game.map.x < 0) {
-        game.map.x = 0;
+    if (game.camera.x < 0) {
+        game.camera.x = 0;
         game.box.x = game.view_port.x + x - 1;
-    } else if (game.map.x > (game.map.width - game.view_port.width)) {
-        int new_offset = game.map.x - (game.map.width - game.view_port.width);
-        game.map.x = game.map.width - game.view_port.width;
+    } else if (game.camera.x > (game.map.width - game.view_port.width)) {
+        int new_offset = game.camera.x - (game.map.width - game.view_port.width);
+        game.camera.x = game.map.width - game.view_port.width;
         game.box.x = game.view_port.x + (game.view_port.width / 2) + new_offset;
     } else {
         game.box.x = game.view_port.x + (game.view_port.width / 2);
     }
 
-    if (game.map.y < 0) {
-        game.map.y = 0;
+    if (game.camera.y < 0) {
+        game.camera.y = 0;
         game.box.y = game.view_port.y + y - 1;
-    } else if (game.map.y > (game.map.height - game.view_port.height)) {
-        int new_offset = game.map.y - (game.map.height - game.view_port.height);
-        game.map.y = game.map.height - game.view_port.height;
+    } else if (game.camera.y > (game.map.height - game.view_port.height)) {
+        int new_offset = game.camera.y - (game.map.height - game.view_port.height);
+        game.camera.y = game.map.height - game.view_port.height;
         game.box.y = game.view_port.y + (game.view_port.height / 2) + new_offset;
     } else {
         game.box.y = game.view_port.y + (game.view_port.height / 2);
@@ -143,43 +145,43 @@ void step_player(enum Direction dir) {
     if (dir == DOWN) {
         game.box.py = game.box.y;
         if (game.view_port.height < game.map.height) {
-            if (game.map.y == game.map.height - game.view_port.height) {
+            if (game.camera.y == game.map.height - game.view_port.height) {
                 game.box.y = game.box.y + 1 > (game.view_port.height - game.box.height) ? game.view_port.height - game.box.height : game.box.y + 1;
             } else {
                 game.box.y = game.box.y + 1 > vmax_h ? vmax_h : game.box.y + 1;
 
-                if (game.box.py == game.box.y) game.map.y++;
+                if (game.box.py == game.box.y) game.camera.y++;
             }
         } else {
             game.box.y = game.box.y + 1 > (game.view_port.height - game.box.height) ? game.view_port.height - game.box.height : game.box.y + 1;
         }
     } else if (dir == UP) {
         game.box.py = game.box.y;
-        if (game.map.y == 0) {
+        if (game.camera.y == 0) {
             game.box.y = game.box.y - 1 > game.view_port.y + 1 ? game.box.y - 1 : game.view_port.y + 1;
         } else {
             game.box.y = game.box.y - 1 < vmin_h ? vmin_h : game.box.y - 1;
-            if (game.box.py == game.box.y) game.map.y--;
+            if (game.box.py == game.box.y) game.camera.y--;
         }
     } else if (dir == RIGHT) {
         game.box.px = game.box.x;
         if (game.view_port.width < game.map.width) {
-            if (game.map.x == game.map.width - game.view_port.width) {
+            if (game.camera.x == game.map.width - game.view_port.width) {
                 game.box.x = game.box.x + 1 > (game.view_port.width - game.box.width) ? game.view_port.width - game.box.width : game.box.x + 1;
             } else {
                 game.box.x = game.box.x + 1 > vmax_w ? vmax_w : game.box.x + 1;
-                if (game.box.px == game.box.x) game.map.x++;
+                if (game.box.px == game.box.x) game.camera.x++;
             }
         } else {
             game.box.x = game.box.x + 1 > (game.view_port.width - game.box.width) ? game.view_port.width - game.box.width : game.box.x + 1;
         }
     } else {
         game.box.px = game.box.x;
-        if (game.map.x == 0) {
+        if (game.camera.x == 0) {
             game.box.x = game.box.x - 1 > game.view_port.x + 1 ? game.box.x - 1 : game.view_port.x + 1;
         } else {
             game.box.x = game.box.x - 1 < vmin_w ? vmin_w : game.box.x - 1;
-            if (game.box.px == game.box.x) game.map.x--;
+            if (game.box.px == game.box.x) game.camera.x--;
         }
     }
 
@@ -276,6 +278,8 @@ int main(void)
 #endif
 
     // Load game...
+
+    // NOTE: NEED a way to check the version of a save matches current version.
     int r = load_game(&game);
     
     // If load failed and error is ENOENT (No such file or directory).

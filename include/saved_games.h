@@ -1,5 +1,5 @@
-#ifndef SAVE_HELPER
-#define SAVE_HELPER
+#ifndef ROGUES_SAVE_H
+#define ROGUES_SAVE_H
 
 #include <stdio.h>
 #include "game.h"
