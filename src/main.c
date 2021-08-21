@@ -20,7 +20,7 @@ enum Direction {
 };
 
 Game game = {
-    .version = "v0.0.3",
+    .version = "v0.0.4",
     .running = 0,
     .loaded = 0,
     .box = {5, 6, 2, 1, 5, 6, 2, 1},
@@ -36,7 +36,7 @@ void clear_term(void)
     printf("\033c");
 }
 
-void draw_map(int x, int y, int w, int h) {
+void draw_map(UI_BOX * container) {
 
     char *xstart, *xend;
 
@@ -44,14 +44,14 @@ void draw_map(int x, int y, int w, int h) {
     char * curLine = game.map.data;
     int i = 2;
     int line_no = 0;
-    while(curLine && i < h + 1)
+    while(curLine && i < container->height + 1)
     {
         char * nextLine = strchr(curLine, '\n');
         if (nextLine) *nextLine = '\0';  // temporarily terminate the current line
         
-        if (line_no > y){
-            xstart = curLine + (x * 12);
-            xend = curLine + (x * 12) + (w * 12) - 1;
+        if (line_no > game.map.y){
+            xstart = curLine + (game.map.x * 12);
+            xend = curLine + (game.map.x * 12) + (container->width * 12) - 1;
 
             char r = *xend;
             *xend = '\0';
@@ -82,7 +82,7 @@ void redraw_frame(void)
     clear_term();
 
     // TESTING DRAW IN MAP!
-    draw_map(game.box.x, game.box.y, game.view_port.width, game.view_port.height);
+    draw_map(&game.view_port);
 
     printf("\033[3;3H[DEBUG] Game Version %s", game.version);
     if (game.loaded) {
@@ -124,7 +124,7 @@ void teleport_player(int x, int y) {
         game.box.y = game.view_port.y + (game.view_port.height / 2);
     }
 
-    draw_map(game.map.x, game.map.y, game.view_port.width, game.view_port.height);
+    draw_map(&game.view_port);
     draw_ui_box(&game.box);
     fflush(stdout);
 }
@@ -183,7 +183,7 @@ void step_player(enum Direction dir) {
         }
     }
 
-    draw_map(game.map.x, game.map.y, game.view_port.width, game.view_port.height);
+    draw_map(&game.view_port);
     draw_ui_box(&game.box);
     fflush(stdout);
 }
