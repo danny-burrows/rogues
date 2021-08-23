@@ -3,11 +3,11 @@
 //
 // Keyboard input stuff
 //
-void reset_terminal_mode(){
+void reset_terminal_mode(void){
     tcsetattr(0, TCSANOW, &orig_termios);
 }
 
-void set_conio_terminal_mode(){
+void set_conio_terminal_mode(void){
     struct termios new_termios;
 
     /* take two copies - one for now, one for later */
@@ -20,7 +20,7 @@ void set_conio_terminal_mode(){
     tcsetattr(0, TCSANOW, &new_termios);
 }
 
-int kbhit(){
+int kbhit(void){
     struct timeval tv = { 0L, 0L };
     fd_set fds;
     FD_ZERO(&fds);
@@ -28,7 +28,7 @@ int kbhit(){
     return select(1, &fds, NULL, NULL, &tv);
 }
 
-int getch(){
+int getch(void){
     int r;
     unsigned char c;
     if ((r = read(0, &c, sizeof(c))) < 0) {

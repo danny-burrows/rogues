@@ -12,10 +12,10 @@
 //
 struct termios orig_termios;
 
-void reset_terminal_mode();
-void set_conio_terminal_mode();
-int kbhit();
-int getch();
+void reset_terminal_mode(void);
+void set_conio_terminal_mode(void);
+int kbhit(void);
+int getch(void);
 
 
 //
