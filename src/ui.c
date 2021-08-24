@@ -53,3 +53,27 @@ void draw_title_bar(int width)
     printf("\033[0m");
     printf("\033[H");
 }
+
+void draw_health_bar(float player_health, UI_BOX * control_surface) {
+    int x = control_surface->x + control_surface->width - 6;
+    int y = control_surface->y;
+
+    // Draw border...
+    printf("\033[%d;%dH┬", y, x);
+    for (int fy = y + 1; fy < control_surface->y + control_surface->height; fy++) {
+        printf("\033[%d;%dH│", fy, x);
+    }
+    printf("\033[%d;%dH┴", (control_surface->y + control_surface->height), x);
+
+
+    int bars = (float)(control_surface->height - 2) * (player_health / 100);
+
+    for (int fy = control_surface->y + (control_surface->height - 2 - bars); bars > 0; bars--) {
+        int magic_gradient_color = (255 - bars * 20) % 255;
+        magic_gradient_color = magic_gradient_color < 0 ? 0 : magic_gradient_color;
+
+        printf("\033[%d;%dH\033[48;2;%d;255;%dm     ", fy + bars, x + 1, magic_gradient_color, magic_gradient_color);
+    }
+
+    printf("\033[%d;%dH\033[38;2;0;0;0m\033[48;2;255;255;255m%.1f", control_surface->y + control_surface->height - 1, x + 1, player_health);
+}

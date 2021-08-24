@@ -79,7 +79,7 @@ void redraw_frame(void)
 
     game.control_surface.width = term_w - 1;
     game.control_surface.y = (.75f * term_h) + 1;
-    game.control_surface.height = .25f * term_h;
+    game.control_surface.height = .25f * term_h - 1;
 
     clear_term();
 
@@ -96,6 +96,9 @@ void redraw_frame(void)
 
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
+
+    draw_health_bar(100.0f, &game.control_surface);
+
     draw_title_bar(term_w);
     fflush(stdout);
 }
