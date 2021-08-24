@@ -26,7 +26,10 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 rogues: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-.PHONY: clean
+.PHONY: tools clean
+
+tools:
+	$(CC) -o ./tools/makemap ./tools/makemap.c -g
 
 clean:
-	rm -f $(ODIR)/*.o rogues
+	rm -f $(ODIR)/*.o ./tools/makemap rogues 
