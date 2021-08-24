@@ -146,7 +146,9 @@ void convert_to_ascii(Image * img) {
         {
             AnsiChar * c = img->data + x + img->width * y;
             int rescaled = c->ch * numScale / 256;
-            printf("\033[38;2;%u;%u;%um%c", c->b, c->g, c->r, scale[numScale - rescaled]);
+
+            // Left padding numbers with 0's to 3 digits.
+            printf("\033[38;2;%03u;%03u;%03um%c", c->b, c->g, c->r, scale[numScale - rescaled]);
         }
 
         printf("\n");
