@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["test_map_small.bmp"],
+            "args": ["gradient-test.bmp"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

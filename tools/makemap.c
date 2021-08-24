@@ -16,7 +16,7 @@ typedef struct {
     AnsiChar * data;
 } Image;
 
-char * scale = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+char * scale = "$@&B%8WM#ZO0QoahkbdpqwmLCJUYXIjft/\\|()1{}[]l?zcvunxr!<>i;:*-+~_,\"^`'. ";
 int numScale;
 
 unsigned char luminanceFromRGB(unsigned char r, unsigned char g, unsigned char b) {
@@ -38,11 +38,11 @@ Image * loadImage(char * location) {
 
     // Checking against SIZE_MAX (Might want to change) and 54 (Min bmp size).
     if(size > SIZE_MAX) {
-        fprintf(stderr, "[ERR] Image size is too big!");
+        fprintf(stderr, "[ERR] Image size is too big!\n");
         fclose(f);	
         return NULL;
     } else if (size < 54) {
-        fprintf(stderr, "[ERR] Image size too small: May be corrupt or invalid file type.");
+        fprintf(stderr, "[ERR] Image size too small: May be corrupt or invalid file type.\n");
         return NULL;
     }
 
@@ -61,7 +61,7 @@ Image * loadImage(char * location) {
     // Magic section...
 
     if (bmp_file_data[0] != 'B' || bmp_file_data[1] != 'M') {
-        fprintf(stderr, "[ERR] Can't find BM in file header. File type may not be BMP");
+        fprintf(stderr, "[ERR] Can't find BM in file header. File type may not be BMP\n");
         free(bmp_file_data);
         return NULL;
     }
@@ -69,7 +69,7 @@ Image * loadImage(char * location) {
     size_t specifiedSize = bmp_file_data[2] | bmp_file_data[3] << 8 | bmp_file_data[4] << 16 | bmp_file_data[5] << 24;
 
     if (specifiedSize != size) {
-        fprintf(stderr, "[ERR] Size in header doesn't match file size!");
+        fprintf(stderr, "[ERR] Size in header doesn't match file size!\n");
         free(bmp_file_data);
         return NULL;
     }
@@ -83,7 +83,7 @@ Image * loadImage(char * location) {
     int noCompression = bmp_file_data[30] == 0 && bmp_file_data[31] == 0 && bmp_file_data[32] == 0   && bmp_file_data[33] == 0;
 
     if (bpp != 24 || !noCompression || width < 1 || height < 1 || width > 64000 || height > 64000) {
-        fprintf(stderr, "[ERR] Unsupported BMP format, only 24 bits per pixel is supported!");
+        fprintf(stderr, "[ERR] Unsupported BMP format, only 24 bits per pixel is supported!\n");
         free(bmp_file_data);
         return NULL;
     }
@@ -98,7 +98,7 @@ Image * loadImage(char * location) {
     size_t imageBytes = rowBytes * height;
 
     if (pdOffset > size || pdOffset + imageBytes > size) {
-        fprintf(stderr, "[ERR] Invalid offset specified!");
+        fprintf(stderr, "[ERR] Invalid offset specified!\n");
         free(bmp_file_data);
         return NULL;
     }
@@ -164,7 +164,7 @@ void release(Image * img){
 
 int main(int argc, char ** argv) {
     if (argc != 2) {
-        fprintf(stderr, "[ERR] Argument needed: filepath to BMP image.");
+        fprintf(stderr, "[ERR] Argument needed: filepath to BMP image.\n");
         return EXIT_FAILURE;
     }
 
