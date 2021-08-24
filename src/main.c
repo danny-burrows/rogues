@@ -278,8 +278,6 @@ int main(void)
 #endif
 
     // Load game...
-
-    // NOTE: NEED a way to check the version of a save matches current version.
     int r = load_game(&game);
     
     // If load failed and error is ENOENT (No such file or directory).
