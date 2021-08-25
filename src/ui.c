@@ -43,13 +43,13 @@ void draw_ui_box_if_updated(UI_BOX * box)
     }
 }
 
-void draw_title_bar(int width) 
+void draw_title_bar(int width, const char * game_version) 
 {
     printf("\033[1;34;47m");
     for (int i = 1; i < width + 1; i++) {
         printf("\033[1;%dH ", i);
     }
-    printf("\033[1;1H  Edit And Command");
+    printf("\033[38;2;170;70;70m\033[1;1H  Rogues - %s", game_version);
     printf("\033[0m");
     printf("\033[H");
 }

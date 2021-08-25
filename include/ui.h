@@ -21,7 +21,7 @@ void clear_ui_box(const UI_BOX * box);
 
 void draw_ui_box_if_updated(UI_BOX * box);
 
-void draw_title_bar(int width);
+void draw_title_bar(int width, const char * game_version);
 
 void draw_health_bar(float health, UI_BOX * control_surface);
 
