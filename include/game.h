@@ -4,6 +4,7 @@
 #include "ui.h"
 #include "map.h"
 #include "camera.h"
+#include "player.h"
 
 typedef struct {
     char version[64];
@@ -12,6 +13,7 @@ typedef struct {
     UI_BOX box;
     UI_BOX view_port;
     UI_BOX control_surface;
+    Player player;
     Camera camera;
     MAP map;
 } Game;

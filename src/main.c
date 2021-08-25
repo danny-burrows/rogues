@@ -10,6 +10,7 @@
 #include "ui.h"
 #include "map.h"
 #include "camera.h"
+#include "player.h"
 #include "terminal.h"
 #include "saved_games.h"
 
@@ -27,6 +28,7 @@ Game game = {
     .box = {5, 6, 2, 1, 5, 6, 2, 1},
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
+    .player = {100, 20, 100.0f},
     .camera = {0},
     .map = {0}
 };
@@ -39,7 +41,6 @@ void clear_term(void)
 }
 
 void draw_map(UI_BOX * container) {
-
     char *xstart, *xend;
 
     int wid = 0;
@@ -97,9 +98,14 @@ void redraw_frame(void)
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
 
-    draw_health_bar(100.0f, &game.control_surface);
+    center_camera_on_player(&game.player, &game.camera, &game.view_port, &game.map);
+    draw_map(&game.view_port);
 
-    draw_title_bar(term_w);
+    draw_player(&game.player, &game.camera, &game.view_port);
+
+    draw_health_bar(game.player.health, &game.control_surface);
+
+    draw_title_bar(term_w, &game.version);
     fflush(stdout);
 }
 
@@ -190,6 +196,8 @@ void step_player(enum Direction dir) {
 
     draw_map(&game.view_port);
     draw_ui_box(&game.box);
+
+    draw_player(&game.player, &game.camera, &game.view_port);
     fflush(stdout);
 }
 
