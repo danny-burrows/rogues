@@ -13,10 +13,10 @@ LDIR =./lib
 
 LIBS=-lm -lpthread
 
-_DEPS = game.h map.h saved_games.h terminal.h ui.h player.h
+_DEPS = game.h map.h saved_games.h terminal.h ui.h player.h camera.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ  = main.o map.o saved_games.o terminal.o ui.o player.o
+_OBJ  = main.o map.o saved_games.o terminal.o ui.o player.o camera.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 

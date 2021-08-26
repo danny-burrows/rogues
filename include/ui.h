@@ -17,6 +17,8 @@ typedef struct {
 
 void draw_ui_box(const UI_BOX * box);
 
+int print_in_box(int x, int y, const char * str, const UI_BOX * box);
+
 void clear_ui_box(const UI_BOX * box);
 
 void draw_ui_box_if_updated(UI_BOX * box);

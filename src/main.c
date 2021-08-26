@@ -33,13 +33,6 @@ Game game = {
     .map = {0}
 };
 
-void clear_term(void) 
-{
-    // Resetting the terminal seems to avoid scrolling issues...
-    // Maybe need to create seperate tty somehow eventually...
-    printf("\033c");
-}
-
 void draw_map(UI_BOX * container) {
     char *xstart, *xend;
 
@@ -78,6 +71,9 @@ void redraw_frame(void)
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
 
+    game.camera.vw = game.view_port.width; // Seems weird that these are the same :/
+    game.camera.vh = game.view_port.height;
+
     game.control_surface.width = term_w - 1;
     game.control_surface.y = (.75f * term_h) + 1;
     game.control_surface.height = .25f * term_h - 1;
@@ -98,45 +94,14 @@ void redraw_frame(void)
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
 
-    center_camera_on_player(&game.player, &game.camera, &game.view_port, &game.map);
+    center_camera_on_player(&game.player, &game.camera, &game.map);
     draw_map(&game.view_port);
 
-    draw_player(&game.player, &game.camera, &game.view_port);
+    player_draw(&game.player, &game.camera, &game.view_port);
 
     draw_health_bar(game.player.health, &game.control_surface);
 
-    draw_title_bar(term_w, &game.version);
-    fflush(stdout);
-}
-
-void teleport_player(int x, int y) {
-    game.camera.x = x - (game.view_port.width / 2);
-    game.camera.y = y - (game.view_port.height / 2);
-
-    if (game.camera.x < 0) {
-        game.camera.x = 0;
-        game.box.x = game.view_port.x + x - 1;
-    } else if (game.camera.x > (game.map.width - game.view_port.width)) {
-        int new_offset = game.camera.x - (game.map.width - game.view_port.width);
-        game.camera.x = game.map.width - game.view_port.width;
-        game.box.x = game.view_port.x + (game.view_port.width / 2) + new_offset;
-    } else {
-        game.box.x = game.view_port.x + (game.view_port.width / 2);
-    }
-
-    if (game.camera.y < 0) {
-        game.camera.y = 0;
-        game.box.y = game.view_port.y + y - 1;
-    } else if (game.camera.y > (game.map.height - game.view_port.height)) {
-        int new_offset = game.camera.y - (game.map.height - game.view_port.height);
-        game.camera.y = game.map.height - game.view_port.height;
-        game.box.y = game.view_port.y + (game.view_port.height / 2) + new_offset;
-    } else {
-        game.box.y = game.view_port.y + (game.view_port.height / 2);
-    }
-
-    draw_map(&game.view_port);
-    draw_ui_box(&game.box);
+    draw_title_bar(term_w, game.version);
     fflush(stdout);
 }
 
@@ -197,7 +162,7 @@ void step_player(enum Direction dir) {
     draw_map(&game.view_port);
     draw_ui_box(&game.box);
 
-    draw_player(&game.player, &game.camera, &game.view_port);
+    player_draw(&game.player, &game.camera, &game.view_port);
     fflush(stdout);
 }
 
@@ -220,16 +185,28 @@ void process_input(const char input)
             step_player(RIGHT);
             break;
         case 105: // I Top Extreme Teleport.
-            teleport_player(game.map.width / 2, 4);
+            player_teleport(game.map.width / 2, 4, &game.player, &game.camera, &game.map, &game.view_port);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 106: // J Left Extreme Teleport.
-            teleport_player(4, game.map.height / 2);
+            player_teleport(4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 107: // K Bottom Extreme Teleport.
-            teleport_player(game.map.width / 2, game.map.height - 4);
+            player_teleport(game.map.width / 2, game.map.height - 4, &game.player, &game.camera, &game.map, &game.view_port);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 108: // L Right Extreme Teleport.
-            teleport_player(game.map.width - 4, game.map.height / 2);
+            player_teleport(game.map.width - 4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 27:
             // Empty any remaining chars in stdin...

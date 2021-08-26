@@ -48,3 +48,13 @@ void get_term_size(int *restrict width, int *restrict height) {
     *height = (int)w.ws_row;
     *width = (int)w.ws_col;
 }
+
+//
+// Terminal Utils
+//
+void clear_term(void) 
+{
+    // Resetting the terminal seems to avoid scrolling issues...
+    // Maybe need to create seperate tty somehow eventually...
+    printf("\033c");
+}

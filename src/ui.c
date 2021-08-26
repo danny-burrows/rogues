@@ -77,3 +77,41 @@ void draw_health_bar(float player_health, UI_BOX * control_surface) {
 
     printf("\033[%d;%dH\033[38;2;0;0;0m\033[48;2;255;255;255m%.1f", control_surface->y + control_surface->height - 1, x + 1, player_health);
 }
+
+int print_in_box(int x, int y, const char * str, const UI_BOX * box) {
+    // WARNING: DO NOT PASS ESCAPED CHARS IN THE STR TO THIS FUNCTION!
+    // This is because we count ALL chars passed in calculating if runover happens!
+
+    int box_x_beginning = box->x + 1;
+    int box_x_end = box->x + box->width;
+
+    int box_y_beginning = box->y + 1;
+    int box_y_end = box->y + box->height - 1;
+
+    if (y < box_y_beginning || y > box_y_end) {
+        return -1;
+    }
+
+    // Fix x possibly being before the box beginning...
+    while (x < box_x_beginning) {
+        str++;
+        x++;
+        if (*str == '\0') {
+            return -1; // Is completely off screen...
+        }
+    }
+
+    int num_chars = box_x_end - x;
+    if (num_chars < 1) return -1;
+    
+    printf("\033[%d;%dH", y, x);
+
+    int i = 0;
+    while (i++ < num_chars && *str != '\0') {
+        putchar(*str);
+        str++;
+        fflush(stdout);
+    }
+    
+    return 0;
+}
