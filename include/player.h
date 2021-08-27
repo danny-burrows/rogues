@@ -21,4 +21,10 @@ void player_draw(const Player * player, const Camera * camera, const UI_BOX * vi
 
 void center_camera_on_player(Player * player, Camera * camera, const MAP * map);
 
+// Player movement
+void player_step_right(Player * player, Camera * camera, MAP * map);
+void player_step_left(Player * player, Camera * camera, MAP * map);
+void player_step_up(Player * player, Camera * camera, MAP * map);
+void player_step_down(Player * player, Camera * camera, MAP * map);
+
 #endif

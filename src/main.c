@@ -14,18 +14,10 @@
 #include "terminal.h"
 #include "saved_games.h"
 
-enum Direction {
-    LEFT = 1,
-    RIGHT = 2,
-    UP = 3,
-    DOWN = 4
-};
-
 Game game = {
-    .version = "v0.0.5",
+    .version = "v0.0.6",
     .running = 0,
     .loaded = 0,
-    .box = {5, 6, 2, 1, 5, 6, 2, 1},
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
     .player = {100, 20, 100.0f},
@@ -89,7 +81,6 @@ void redraw_frame(void)
     } else {
         printf("\033[4;3H[DEBUG] New game save created!");
     }
-    draw_ui_box(&game.box);
 
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
@@ -105,67 +96,6 @@ void redraw_frame(void)
     fflush(stdout);
 }
 
-void step_player(enum Direction dir) {
-    /*
-    This is by far, without a doubt, the worst function I have ever writen in my life.
-    I'm sorry.
-    */
-
-    int vmin_w = (game.view_port.width / 4) + game.view_port.x;
-    int vmax_w = ((3 * game.view_port.width) / 4) + game.view_port.x;
-    int vmin_h = (game.view_port.height / 4) + game.view_port.y;
-    int vmax_h = ((3 * game.view_port.height) / 4) + game.view_port.y;
-
-    if (dir == DOWN) {
-        game.box.py = game.box.y;
-        if (game.view_port.height < game.map.height) {
-            if (game.camera.y == game.map.height - game.view_port.height) {
-                game.box.y = game.box.y + 1 > (game.view_port.height - game.box.height) ? game.view_port.height - game.box.height : game.box.y + 1;
-            } else {
-                game.box.y = game.box.y + 1 > vmax_h ? vmax_h : game.box.y + 1;
-
-                if (game.box.py == game.box.y) game.camera.y++;
-            }
-        } else {
-            game.box.y = game.box.y + 1 > (game.view_port.height - game.box.height) ? game.view_port.height - game.box.height : game.box.y + 1;
-        }
-    } else if (dir == UP) {
-        game.box.py = game.box.y;
-        if (game.camera.y == 0) {
-            game.box.y = game.box.y - 1 > game.view_port.y + 1 ? game.box.y - 1 : game.view_port.y + 1;
-        } else {
-            game.box.y = game.box.y - 1 < vmin_h ? vmin_h : game.box.y - 1;
-            if (game.box.py == game.box.y) game.camera.y--;
-        }
-    } else if (dir == RIGHT) {
-        game.box.px = game.box.x;
-        if (game.view_port.width < game.map.width) {
-            if (game.camera.x == game.map.width - game.view_port.width) {
-                game.box.x = game.box.x + 1 > (game.view_port.width - game.box.width) ? game.view_port.width - game.box.width : game.box.x + 1;
-            } else {
-                game.box.x = game.box.x + 1 > vmax_w ? vmax_w : game.box.x + 1;
-                if (game.box.px == game.box.x) game.camera.x++;
-            }
-        } else {
-            game.box.x = game.box.x + 1 > (game.view_port.width - game.box.width) ? game.view_port.width - game.box.width : game.box.x + 1;
-        }
-    } else {
-        game.box.px = game.box.x;
-        if (game.camera.x == 0) {
-            game.box.x = game.box.x - 1 > game.view_port.x + 1 ? game.box.x - 1 : game.view_port.x + 1;
-        } else {
-            game.box.x = game.box.x - 1 < vmin_w ? vmin_w : game.box.x - 1;
-            if (game.box.px == game.box.x) game.camera.x--;
-        }
-    }
-
-    draw_map(&game.view_port);
-    draw_ui_box(&game.box);
-
-    player_draw(&game.player, &game.camera, &game.view_port);
-    fflush(stdout);
-}
-
 void process_input(const char input) 
 {    
     printf("\033[6;3H[DEBUG] Pressed Key: %c", input);
@@ -173,16 +103,32 @@ void process_input(const char input)
     switch (input)
     {
         case 119: // W
-            step_player(UP);
+            // step_player(UP);
+            player_step_up(&game.player, &game.camera, &game.map);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 115: // S
-            step_player(DOWN);
+            // step_player(DOWN);
+            player_step_down(&game.player, &game.camera, &game.map);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 97:  // A
-            step_player(LEFT);
+            // step_player(LEFT);
+            player_step_left(&game.player, &game.camera, &game.map);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 100: // D
-            step_player(RIGHT);
+            // step_player(RIGHT);
+            player_step_right(&game.player, &game.camera, &game.map);
+            draw_map(&game.view_port);
+            player_draw(&game.player, &game.camera, &game.view_port);
+            fflush(stdout);
             break;
         case 105: // I Top Extreme Teleport.
             player_teleport(game.map.width / 2, 4, &game.player, &game.camera, &game.map, &game.view_port);
@@ -276,10 +222,8 @@ int main(void)
 
         int width, height;
         get_term_size(&width, &height);
-        game.box.px = width / 2;
-        game.box.py = height / 2;
-        game.box.x = width / 2;
-        game.box.y = height / 2;
+        game.player.x = width / 2;
+        game.player.y = height / 2;
 
         if (save_game(&game) == -1) exit(EXIT_FAILURE);
     } 

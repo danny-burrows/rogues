@@ -16,3 +16,23 @@ void camera_center_on_point(int x, int y, Camera * camera, const MAP * map) {
         camera->y = map->height - camera->vh;
     }
 }
+
+void camera_step_right(Camera * camera, const MAP * map) {
+    if (camera->x + camera->vw + 1 >= map->width) return;
+    camera->x++;
+}
+
+void camera_step_left(Camera * camera, const MAP * map) {
+    if (camera->x - 1 <= 0) return;
+    camera->x--;    
+}
+
+void camera_step_up(Camera * camera, const MAP * map) {
+    if (camera->y - 1 <= 0) return;
+    camera->y--;
+}
+
+void camera_step_down(Camera * camera, const MAP * map) {
+    if (camera->y + camera->vh + 1 >= map->height) return;
+    camera->y++;
+}
