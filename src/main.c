@@ -210,6 +210,9 @@ int main(void)
     printf("Press enter to begin...\n");
     getch();
 
+    // Enter into alternative buffer.
+    init_terminal(game.version);
+
     game.running = 1;
 
     // Set terminal operating mode.
@@ -225,6 +228,9 @@ int main(void)
     // Clear screen and reset terminal.
     clear_term();
     reset_terminal_mode();
+    
+    // Switch back to main buffer.
+    reset_terminal();
 
     // Save the game.
     save_game(&game);

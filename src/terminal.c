@@ -52,9 +52,26 @@ void get_term_size(int *restrict width, int *restrict height) {
 //
 // Terminal Utils
 //
-void clear_term(void) 
+void clear_term(void)
 {
-    // Resetting the terminal seems to avoid scrolling issues...
-    // Maybe need to create seperate tty somehow eventually...
-    printf("\033c");
+    printf("\0332J");
+}
+
+void init_terminal(char * game_version) {
+
+    // Use alternative stdout buffer. (This means users terminal is preserved for when they exit)
+    printf("\033[?1049h");
+
+    // Set title
+    printf("\033]0;Rogues - %s\x07", game_version);
+
+    // Set cursor to top of screen.
+    printf("\033[1;1H");
+
+    fflush(stdout);
+}
+
+void reset_terminal(void) {
+    // Switch back to main stdout buffer.
+    printf("\033[?1049l");
 }

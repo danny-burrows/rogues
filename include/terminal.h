@@ -28,4 +28,8 @@ void get_term_size(int *restrict width, int *restrict height);
 //
 void clear_term(void);
 
+void init_terminal(char * game_version);
+
+void reset_terminal(void);
+
 #endif
