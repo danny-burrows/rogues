@@ -72,9 +72,7 @@ void redraw_frame(void)
 
     clear_term();
 
-    // TESTING DRAW IN MAP!
-    draw_map(&game.view_port);
-
+    // Debug Menu
     printf("\033[3;3H[DEBUG] Game Version %s", game.version);
     if (game.loaded) {
         printf("\033[4;3H[DEBUG] Game loaded successfully!");
@@ -82,17 +80,17 @@ void redraw_frame(void)
         printf("\033[4;3H[DEBUG] New game save created!");
     }
 
+    // Main UI Drawing
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
+    draw_health_bar(game.player.health, &game.control_surface);
+    draw_title_bar(term_w, game.version);
 
+    // Drawing Map
     center_camera_on_player(&game.player, &game.camera, &game.map);
     draw_map(&game.view_port);
-
     player_draw(&game.player, &game.camera, &game.view_port);
 
-    draw_health_bar(game.player.health, &game.control_surface);
-
-    draw_title_bar(term_w, game.version);
     fflush(stdout);
 }
 
@@ -103,56 +101,28 @@ void process_input(const char input)
     switch (input)
     {
         case 119: // W
-            // step_player(UP);
             player_step_up(&game.player, &game.camera, &game.map);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 115: // S
-            // step_player(DOWN);
             player_step_down(&game.player, &game.camera, &game.map);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 97:  // A
-            // step_player(LEFT);
             player_step_left(&game.player, &game.camera, &game.map);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 100: // D
-            // step_player(RIGHT);
             player_step_right(&game.player, &game.camera, &game.map);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 105: // I Top Extreme Teleport.
             player_teleport(game.map.width / 2, 4, &game.player, &game.camera, &game.map, &game.view_port);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 106: // J Left Extreme Teleport.
             player_teleport(4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 107: // K Bottom Extreme Teleport.
             player_teleport(game.map.width / 2, game.map.height - 4, &game.player, &game.camera, &game.map, &game.view_port);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 108: // L Right Extreme Teleport.
             player_teleport(game.map.width - 4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
-            draw_map(&game.view_port);
-            player_draw(&game.player, &game.camera, &game.view_port);
-            fflush(stdout);
             break;
         case 27:
             // Empty any remaining chars in stdin...
@@ -162,9 +132,14 @@ void process_input(const char input)
 
             // Program will now exit.
             game.running = 0;
+            break;
         default:
             break;
     }
+
+    draw_map(&game.view_port);
+    player_draw(&game.player, &game.camera, &game.view_port);
+    fflush(stdout);
 }
 
 
