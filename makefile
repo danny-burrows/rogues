@@ -20,11 +20,14 @@ _OBJ  = main.o map.o saved_games.o terminal.o ui.o player.o camera.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
-$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS) $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 rogues: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+$(ODIR): 
+	mkdir obj
 
 .PHONY: tools clean
 
@@ -32,4 +35,4 @@ tools:
 	$(CC) -o ./tools/makemap ./tools/makemap.c -g
 
 clean:
-	rm -f $(ODIR)/*.o ./tools/makemap rogues 
+	rm -rf $(ODIR) ./tools/makemap rogues 

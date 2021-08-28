@@ -9,3 +9,10 @@
   ███    ███  ▀██████▀    ████████▀  ████████▀    ██████████  ▄████████▀  
   ███    ███  Pre-Alpha                                                      
 </p></pre>
+
+## Test a debug build!
+```bash
+cd rogues-dev
+make config=debug
+./rogues
+```
