@@ -25,10 +25,10 @@ typedef struct  {
     int width;
     int height;
     char data[MAX_MAP_SIZE];
-} MAP;
+} Map;
 
-int set_map_size(MAP *map);
+int set_map_size(Map *map);
 
-int load_map(MAP *map);
+int load_map(Map *map);
 
 #endif

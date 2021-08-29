@@ -1,6 +1,6 @@
 #include "map.h"
 
-int set_map_size(MAP *map) {
+int set_map_size(Map *map) {
     // Probably need to make all this look less horrible...
 
     map->width = strchr(map->data, '\n') - map->data;
@@ -13,7 +13,7 @@ int set_map_size(MAP *map) {
     return 0;
 }
 
-int load_map(MAP *map) {
+int load_map(Map *map) {
     int map_size;
     FILE *read_ptr;
 

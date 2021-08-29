@@ -12,7 +12,7 @@ void player_set_health(Player * player, float health) {
     // draw_health_bar();
 }
 
-int player_set_position(int x, int y, Player * player, const MAP * map) {
+int player_set_position(int x, int y, Player * player, const Map * map) {
     // Check player is out of bounds of the map.
     if (x < 0 || x > map->width) {
         return -1;
@@ -24,7 +24,7 @@ int player_set_position(int x, int y, Player * player, const MAP * map) {
     player->y = y;
 }
 
-void player_draw(const Player * player, const Camera * camera, const UI_BOX * view_port) {
+void player_draw(const Player * player, const Camera * camera, const Ui_Box * view_port) {
     // Calc where the player is relative to the viewport.
     int screen_x = view_port->x + (player->x - camera->x);
     int screen_y = view_port->y + (player->y - camera->y);
@@ -34,7 +34,7 @@ void player_draw(const Player * player, const Camera * camera, const UI_BOX * vi
     print_in_box(screen_x, screen_y + 2, "/ \\", view_port);
 }
 
-void center_camera_on_player(Player * player, Camera * camera, const MAP * map) {
+void center_camera_on_player(Player * player, Camera * camera, const Map * map) {
     camera->x = player->x - (camera->vw / 2);
     camera->y = player->y - (camera->vh / 2);
 
@@ -51,12 +51,12 @@ void center_camera_on_player(Player * player, Camera * camera, const MAP * map) 
     }
 }
 
-int player_teleport(int x, int y, Player * player, Camera * camera, MAP * map, UI_BOX * view_port) {
+int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port) {
     player_set_position(x, y, player, map);
     center_camera_on_player(player, camera, map);
 }
 
-void player_step_right(Player * player, Camera * camera, MAP * map) {
+void player_step_right(Player * player, Camera * camera, Map * map) {
     int max_x = ((3 * camera->vw) / 4) + camera->x;
 
     // Check if player is stepping outside the inner area...
@@ -66,7 +66,7 @@ void player_step_right(Player * player, Camera * camera, MAP * map) {
 
 }
 
-void player_step_left(Player * player, Camera * camera, MAP * map) {
+void player_step_left(Player * player, Camera * camera, Map * map) {
     int min_x = (camera->vw / 4) + camera->x;
 
     if (player->x-- < min_x) {
@@ -75,7 +75,7 @@ void player_step_left(Player * player, Camera * camera, MAP * map) {
     
 }
 
-void player_step_up(Player * player, Camera * camera, MAP * map) {
+void player_step_up(Player * player, Camera * camera, Map * map) {
     int min_y = (camera->vh / 4) + camera->y;
 
     if (player->y-- < min_y) {
@@ -84,7 +84,7 @@ void player_step_up(Player * player, Camera * camera, MAP * map) {
 
 }
 
-void player_step_down(Player * player, Camera * camera, MAP * map) {
+void player_step_down(Player * player, Camera * camera, Map * map) {
     int max_y = ((3 * camera->vh) / 4) + camera->y - 3;
 
     if (player->y++ > max_y) {

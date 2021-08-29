@@ -13,18 +13,18 @@ typedef struct {
 
 void player_set_health(Player * player, float health);
 
-int player_set_position(int x, int y, Player * player, const MAP * map);
+int player_set_position(int x, int y, Player * player, const Map * map);
 
-int player_teleport(int x, int y, Player * player, Camera * camera, MAP * map, UI_BOX * view_port);
+int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port);
 
-void player_draw(const Player * player, const Camera * camera, const UI_BOX * view_port);
+void player_draw(const Player * player, const Camera * camera, const Ui_Box * view_port);
 
-void center_camera_on_player(Player * player, Camera * camera, const MAP * map);
+void center_camera_on_player(Player * player, Camera * camera, const Map * map);
 
 // Player movement
-void player_step_right(Player * player, Camera * camera, MAP * map);
-void player_step_left(Player * player, Camera * camera, MAP * map);
-void player_step_up(Player * player, Camera * camera, MAP * map);
-void player_step_down(Player * player, Camera * camera, MAP * map);
+void player_step_right(Player * player, Camera * camera, Map * map);
+void player_step_left(Player * player, Camera * camera, Map * map);
+void player_step_up(Player * player, Camera * camera, Map * map);
+void player_step_down(Player * player, Camera * camera, Map * map);
 
 #endif

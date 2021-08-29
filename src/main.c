@@ -14,8 +14,18 @@
 #include "terminal.h"
 #include "saved_games.h"
 
+/*
+TODO: 
+- Fix debug menu & proper debug interface!
+- Possibly temporary buffer for post processing.
+- Lighting / Mock shaders!
+- Buildings and interiors.
+- Inventory system.
+- NPC's and followers.
+*/
+
 Game game = {
-    .version = "v0.0.6",
+    .version = "v0.0.7",
     .running = 0,
     .loaded = 0,
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
@@ -25,11 +35,11 @@ Game game = {
     .map = {0}
 };
 
-void draw_map(UI_BOX * container) {
+void render_scene(Map * map, Camera * camera, Ui_Box * container) {
     char *xstart, *xend;
 
     int wid = 0;
-    char * curLine = game.map.data;
+    char * curLine = map->data;
     int i = 2;
     int line_no = 0;
     while(curLine && i < container->height + 1)
@@ -37,9 +47,9 @@ void draw_map(UI_BOX * container) {
         char * nextLine = strchr(curLine, '\n');
         if (nextLine) *nextLine = '\0';  // temporarily terminate the current line
         
-        if (line_no > game.camera.y){
-            xstart = curLine + (game.camera.x * 12);
-            xend = curLine + (game.camera.x * 12) + (container->width * 12) - 1;
+        if (line_no > camera->y){
+            xstart = curLine + (camera->x * 12);
+            xend = curLine + (camera->x * 12) + (container->width * 12) - 1;
 
             char r = *xend;
             *xend = '\0';
@@ -51,15 +61,15 @@ void draw_map(UI_BOX * container) {
         curLine = nextLine ? (nextLine+1) : NULL;
         line_no++;
     }
+
     printf("\033[0m");
+
+    player_draw(&game.player, &game.camera, &game.view_port);
     fflush(stdout);
 }
 
-void redraw_frame(void) 
+void handle_resize(int term_w, int term_h) 
 {
-    int term_w, term_h = {0};
-    get_term_size(&term_w, &term_h);
-
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
 
@@ -88,10 +98,7 @@ void redraw_frame(void)
 
     // Drawing Map
     center_camera_on_player(&game.player, &game.camera, &game.map);
-    draw_map(&game.view_port);
-    player_draw(&game.player, &game.camera, &game.view_port);
-
-    fflush(stdout);
+    render_scene(&game.map, &game.camera, &game.view_port);
 }
 
 void process_input(const char input) 
@@ -137,9 +144,7 @@ void process_input(const char input)
             break;
     }
 
-    draw_map(&game.view_port);
-    player_draw(&game.player, &game.camera, &game.view_port);
-    fflush(stdout);
+    render_scene(&game.map, &game.camera, &game.view_port);
 }
 
 
@@ -161,7 +166,7 @@ void *draw_thread(void *vargp)
             ph = height;
 
             // Size has changed so redraw the frame...
-            redraw_frame();
+            handle_resize(width, height);
         }
     }
 }

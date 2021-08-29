@@ -13,12 +13,11 @@ typedef struct {
     char version[64];
     int running;
     int loaded;
-    UI_BOX box; // To be deprecated!
-    UI_BOX view_port;
-    UI_BOX control_surface;
+    Ui_Box view_port;
+    Ui_Box control_surface;
     Player player;
     Camera camera;
-    MAP map;
+    Map map;
 } Game;
 
 #endif

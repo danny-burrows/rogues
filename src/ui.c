@@ -1,6 +1,6 @@
 #include "ui.h"
 
-void draw_ui_box(const UI_BOX * box)
+void draw_ui_box(const Ui_Box * box)
 {
     for (int x = box->x; x < box->x + box->width; x++ ) {
         printf("\033[%d;%dH─", box->y, x);
@@ -18,7 +18,7 @@ void draw_ui_box(const UI_BOX * box)
     printf("\033[%d;%dH└", box->y + box->height, box->x);
 }
 
-void clear_ui_box(const UI_BOX * box) 
+void clear_ui_box(const Ui_Box * box) 
 {
     for (int y = box->py; y < box->py + box->ph + 1; y++) {
         for (int x = box->px; x < box->px + box->pw + 1; x++ ) {
@@ -27,7 +27,7 @@ void clear_ui_box(const UI_BOX * box)
     }
 }
 
-void draw_ui_box_if_updated(UI_BOX * box) 
+void draw_ui_box_if_updated(Ui_Box * box) 
 {
     if (box->x != box->px 
      || box->y != box->py
@@ -54,7 +54,7 @@ void draw_title_bar(int width, const char * game_version)
     printf("\033[H");
 }
 
-void draw_health_bar(float player_health, UI_BOX * control_surface) {
+void draw_health_bar(float player_health, Ui_Box * control_surface) {
     int x = control_surface->x + control_surface->width - 6;
     int y = control_surface->y;
 
@@ -78,7 +78,7 @@ void draw_health_bar(float player_health, UI_BOX * control_surface) {
     printf("\033[%d;%dH\033[38;2;0;0;0m\033[48;2;255;255;255m%.1f", control_surface->y + control_surface->height - 1, x + 1, player_health);
 }
 
-int print_in_box(int x, int y, const char * str, const UI_BOX * box) {
+int print_in_box(int x, int y, const char * str, const Ui_Box * box) {
     // WARNING: DO NOT PASS ESCAPED CHARS IN THE STR TO THIS FUNCTION!
     // This is because we count ALL chars passed in calculating if runover happens!
 
