@@ -4,16 +4,15 @@
 #include <stdint.h>
 
 typedef struct {
-    unsigned char ch;
     unsigned char r;
     unsigned char g;
     unsigned char b;
-} AnsiChar;
+} PixelData;
 
 typedef struct {
     size_t width;
     size_t height;
-    AnsiChar * data;
+    PixelData * data;
 } Image;
 
 char * scale = "$@&B%8WM#ZO0QoahkbdpqwmLCJUYXIjft/\\|()1{}[]l?zcvunxr!<>i;:*-+~_,\"^`'. ";
@@ -109,11 +108,11 @@ Image * loadImage(char * location) {
 
     size_t imgSize = width * height;
 
-    img->data = (AnsiChar *) malloc(imgSize * sizeof(AnsiChar));
+    img->data = (PixelData *) malloc(imgSize * sizeof(PixelData));
 
     printf("Offset: %lu\n", pdOffset);
 
-    AnsiChar * ptr = img->data;
+    PixelData * ptr = img->data;
     unsigned char * srcPtr = &bmp_file_data[pdOffset];
 
     for (size_t i = 0; i < imgSize; ++i) {
@@ -124,7 +123,6 @@ Image * loadImage(char * location) {
         ptr->r = r;
         ptr->g = g;
         ptr->b = b;
-        ptr->ch = luminanceFromRGB(r, g, b);
 
         ptr++;
         srcPtr += bytesPerPixel;
@@ -139,13 +137,26 @@ Image * loadImage(char * location) {
     return img;
 }
 
+unsigned char uchar_avg(unsigned char char1, unsigned char char2) {
+    return (char1 + char2) / 2;
+}
+
 void convert_to_ascii(Image * img) {
-    for (size_t y = img->height - 1; y > 0; --y)
+    for (size_t y = img->height - 1; y > 1; y -= 2)
     {
         for (size_t x = 0; x < img->width; ++x)
         {
-            AnsiChar * c = img->data + x + img->width * y;
-            int rescaled = c->ch * numScale / 256;
+            // Take the average of this row and next to squash image vertially.
+            PixelData * c = img->data + x + img->width * y;
+            PixelData * c2 = img->data + x + img->width * (y - 1);
+            
+            c->r = uchar_avg(c->r, c2->r);
+            c->b = uchar_avg(c->b, c2->b);
+            c->g = uchar_avg(c->g, c2->g);
+
+            // Calc luminace and use to find Ascii char.
+            unsigned char ch = luminanceFromRGB(c->r, c->g, c->b);
+            int rescaled = ch * numScale / 256;
 
             // Left padding numbers with 0's to 3 digits.
             printf("\033[38;2;%03u;%03u;%03um%c", c->b, c->g, c->r, scale[numScale - rescaled]);
