@@ -11,7 +11,7 @@
 //
 // Keyboard input stuff
 //
-struct termios orig_termios;
+static struct termios orig_termios;
 
 void reset_terminal_mode(void);
 void set_conio_terminal_mode(void);
