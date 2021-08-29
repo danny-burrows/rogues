@@ -9,6 +9,7 @@
 
 #include "ui.h"
 #include "map.h"
+#include "debug.h"
 #include "camera.h"
 #include "player.h"
 #include "terminal.h"
@@ -188,7 +189,13 @@ int main(void)
     int  iret1, iret2;
 
 #ifdef DCONFIGSET
-    printf("[DEBUG] Welcome Developer! Game launched in debug mode!\n");
+    printf("=========== DEBUG KEY ===========\n");
+    d_printf(DEBUG, "This is a debug message.\n");
+    d_printf(WARN, "This is a warning.\n");
+    d_printf(ERR, "This is an error!\n");
+    printf("=================================\n\n");
+    
+    d_printf(DEBUG, "Welcome Developer! Game launched in debug mode.\n\n");
 #endif
 
     // Load game...
@@ -197,7 +204,7 @@ int main(void)
     // If load failed and error is ENOENT (No such file or directory).
     if (r == -1 && errno == 2) 
     {
-        printf("[DEBUG] Attempting to load map & create new game...\n");
+        d_printf(DEBUG, "Attempting to load map & create new game...\n");
         if (load_map(&game.map) == -1) exit(EXIT_FAILURE);
 
         int width, height;
@@ -240,6 +247,6 @@ int main(void)
     // Save the game.
     save_game(&game);
 
-    printf("[DEBUG] Graceful exit. Thanks! :-)\n");
+    d_printf(DEBUG, "Graceful exit. Thanks! :-)\n");
     return 0;
 }

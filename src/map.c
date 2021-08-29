@@ -8,8 +8,8 @@ int set_map_size(Map *map) {
 
     map->width /= 12;
 
-    printf("[DEBUG] MAP WIDTH: %d\n", map->width);
-    printf("[DEBUG] MAP HEIGHT: %d\n", map->height);
+    d_printf(DEBUG, "MAP WIDTH: %d\n", map->width);
+    d_printf(DEBUG, "MAP HEIGHT: %d\n", map->height);
     return 0;
 }
 
@@ -39,6 +39,6 @@ int load_map(Map *map) {
 
     set_map_size(map);
 
-    printf("[DEBUG] Map loaded successfully!\n");
+    d_printf(DEBUG, "Map loaded successfully!\n");
     return 0;
 }

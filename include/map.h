@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "debug.h"
 
 #define MAX_MAP_SIZE 256 * 1024 // Max map size currently 256KB
 #define MAP_FILE_PATH "./data/map/map.ans"

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "game.h"
+#include "debug.h"
 
 #define GAME_SAVE_PATH "./data/saves/eac.sav"
 

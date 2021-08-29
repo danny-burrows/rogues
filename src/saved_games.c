@@ -5,7 +5,8 @@ int save_game(const Game * game) {
     write_ptr = fopen(GAME_SAVE_PATH, "wb");
 
     if (write_ptr == NULL) {
-        perror("[ERR] Error saving game");
+        perror("\033[1m\033[38;2;245;40;50m[ERR] Error saving game");
+        printf("\033[0m\n");
         return -1;
     }
 
@@ -13,7 +14,7 @@ int save_game(const Game * game) {
     fclose(write_ptr);
     if (successfully_writen != 1) return -1;
 
-    printf("[DEBUG] Saved game successfully!\n");
+    d_printf(DEBUG, "Game saved successfully!\n");
     return 0;
 }
 
@@ -22,7 +23,8 @@ int load_game(Game * game) {
     read_ptr = fopen(GAME_SAVE_PATH, "rb");
 
     if (read_ptr == NULL) {
-        perror("[ERR] Error loading game save");
+        perror("\033[38;2;255;107;20m[WARN] Failed to load save");
+        printf("\033[0m\n");
         return -1;
     }
 
@@ -52,6 +54,6 @@ int load_game(Game * game) {
 
     // For debug...
     game->loaded = 1;
-    printf("[DEBUG] Game save loaded successfully!\n");
+    d_printf(DEBUG, "Game loaded successfully!\n");
     return 0;
 }
