@@ -5,7 +5,7 @@
 #include "game.h"
 #include "debug.h"
 
-#define GAME_SAVE_PATH "./data/saves/eac.sav"
+#define GAME_SAVE_PATH "./data/saves/rogues.sav"
 
 int save_game(const Game * game);
 
