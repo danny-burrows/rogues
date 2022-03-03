@@ -1,4 +1,3 @@
-incl_dir = include
 src_dir  = src
 obj_dir  = obj
 libs 	 = -lm -lpthread
@@ -7,9 +6,9 @@ srcs = $(wildcard src/*.c)
 objs = $(srcs:src/%.c=obj/%.o)
 
 ifeq ($(config), debug)
-    flags = -I include -g -D DCONFIGSET
+    flags = -I src -g -D DCONFIGSET
 else
-	flags = -I include -O3
+	flags = -I src -O3
 endif
 
 $(obj_dir)/%.o: $(src_dir)/%.c | $(obj_dir)
