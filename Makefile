@@ -3,6 +3,7 @@ obj_dir  = obj
 libs 	 = -lm -lpthread
 
 srcs = $(wildcard src/*.c)
+hdrs = $(wildcard src/*.h)
 objs = $(srcs:src/%.c=obj/%.o)
 
 ifeq ($(config), debug)
@@ -11,7 +12,7 @@ else
 	flags = -I src -O3
 endif
 
-$(obj_dir)/%.o: $(src_dir)/%.c | $(obj_dir)
+$(obj_dir)/%.o: $(src_dir)/%.c $(hdrs) | $(obj_dir)
 	gcc -c -o $@ $< $(flags)
 
 rogues: $(objs)
