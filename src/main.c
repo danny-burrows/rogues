@@ -117,7 +117,7 @@ void handle_resize(int term_w, int term_h)
     draw_title_bar(term_w, game.version);
 
     // Drawing Map
-    center_camera_on_player(&game.player, &game.camera, &game.map);
+    camera_center_on_point(&game.camera, game.player.x, game.player.y, game.map.width, game.map.height);
     render_scene(&game.map, &game.camera, &game.view_port);
 
 #ifdef DCONFIGSET 

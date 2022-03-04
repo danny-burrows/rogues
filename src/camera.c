@@ -1,38 +1,38 @@
 #include "camera.h"
 
-void camera_center_on_point(int x, int y, Camera * camera, const Map * map) {
+void camera_center_on_point(Camera * camera, int x, int y, int map_width, int map_height) {
     camera->x = x - (camera->vw / 2);
     camera->y = y - (camera->vh / 2);
 
     if (camera->x < 0) {
         camera->x = 0;
-    } else if (camera->x > (map->width - camera->vw)) {
-        camera->x = map->width - camera->vw;
+    } else if (camera->x > (map_width - camera->vw)) {
+        camera->x = map_width - camera->vw;
     }
 
     if (camera->y < 0) {
         camera->y = 0;
-    } else if (camera->y > (map->height - camera->vh)) {
-        camera->y = map->height - camera->vh;
+    } else if (camera->y > (map_height - camera->vh)) {
+        camera->y = map_height - camera->vh;
     }
 }
 
-void camera_step_right(Camera * camera, const Map * map) {
-    if (camera->x + camera->vw + 1 >= map->width) return;
+void camera_step_right(Camera * camera, int map_width) {
+    if (camera->x + camera->vw + 1 >= map_width) return;
     camera->x++;
 }
 
-void camera_step_left(Camera * camera, const Map * map) {
+void camera_step_left(Camera * camera) {
     if (camera->x - 1 <= 0) return;
     camera->x--;    
 }
 
-void camera_step_up(Camera * camera, const Map * map) {
+void camera_step_up(Camera * camera) {
     if (camera->y - 1 <= 0) return;
     camera->y--;
 }
 
-void camera_step_down(Camera * camera, const Map * map) {
-    if (camera->y + camera->vh + 1 >= map->height) return;
+void camera_step_down(Camera * camera, int map_height) {
+    if (camera->y + camera->vh + 1 >= map_height) return;
     camera->y++;
 }

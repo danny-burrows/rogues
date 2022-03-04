@@ -19,8 +19,6 @@ int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, U
 
 void player_draw(const Player * player, const Camera * camera, const Ui_Box * view_port);
 
-void center_camera_on_player(Player * player, Camera * camera, const Map * map);
-
 // Player movement
 void player_step_right(Player * player, Camera * camera, Map * map);
 void player_step_left(Player * player, Camera * camera, Map * map);

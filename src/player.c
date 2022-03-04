@@ -34,26 +34,9 @@ void player_draw(const Player * player, const Camera * camera, const Ui_Box * vi
     print_in_box(screen_x, screen_y + 2, "/ \\", view_port);
 }
 
-void center_camera_on_player(Player * player, Camera * camera, const Map * map) {
-    camera->x = player->x - (camera->vw / 2);
-    camera->y = player->y - (camera->vh / 2);
-
-    if (camera->x < 0) {
-        camera->x = 0;
-    } else if (camera->x > (map->width - camera->vw)) {
-        camera->x = map->width - camera->vw;
-    }
-
-    if (camera->y < 0) {
-        camera->y = 0;
-    } else if (camera->y > (map->height - camera->vh)) {
-        camera->y = map->height - camera->vh;
-    }
-}
-
 int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port) {
     player_set_position(x, y, player, map);
-    center_camera_on_player(player, camera, map);
+    camera_center_on_point(camera, player->x, player->y, map->width, map->height);
 }
 
 void player_step_right(Player * player, Camera * camera, Map * map) {
@@ -61,7 +44,7 @@ void player_step_right(Player * player, Camera * camera, Map * map) {
 
     // Check if player is stepping outside the inner area...
     if (player->x++ > max_x) {
-        camera_step_right(camera, map); // Camera should only move if it can...
+        camera_step_right(camera, map->width); // Camera should only move if it can...
     }
 
 }
@@ -70,7 +53,7 @@ void player_step_left(Player * player, Camera * camera, Map * map) {
     int min_x = (camera->vw / 4) + camera->x;
 
     if (player->x-- < min_x) {
-        camera_step_left(camera, map);
+        camera_step_left(camera);
     }
     
 }
@@ -79,7 +62,7 @@ void player_step_up(Player * player, Camera * camera, Map * map) {
     int min_y = (camera->vh / 4) + camera->y;
 
     if (player->y-- < min_y) {
-        camera_step_up(camera, map);
+        camera_step_up(camera);
     }
 
 }
@@ -88,7 +71,7 @@ void player_step_down(Player * player, Camera * camera, Map * map) {
     int max_y = ((3 * camera->vh) / 4) + camera->y - 3;
 
     if (player->y++ > max_y) {
-        camera_step_down(camera, map);
+        camera_step_down(camera, map->height);
     }
 
 }
