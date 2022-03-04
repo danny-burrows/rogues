@@ -54,7 +54,7 @@ void get_term_size(int *restrict width, int *restrict height) {
 //
 void clear_term(void)
 {
-    printf("\0332J");
+    printf("\033[2J");
 }
 
 void init_terminal(char * game_version) {
