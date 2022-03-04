@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "camera.h"
 #include "player.h"
+#include "drawing.h"
 #include "terminal.h"
 #include "saved_games.h"
 
@@ -48,6 +49,8 @@ Game game = {
     .map = {0}
 };
 
+Draw_Buffer draw_buff;
+
 void draw_debug_panel(void) {
     // Debug Menu
     printf("\033[3;2H[INFO] Game Version %s", game.version);
@@ -64,42 +67,21 @@ void draw_debug_panel(void) {
 }
 
 void render_scene(Map * map, Camera * camera, Ui_Box * container) {
-    char *xstart, *xend;
 
-    int wid = 0;
-    char * curLine = map->data;
-    int i = 2;
-    int line_no = 0;
-    while(curLine && i < container->height + 1)
-    {
-        char * nextLine = strchr(curLine, '\n');
-        if (nextLine) *nextLine = '\0';  // temporarily terminate the current line
-        
-        if (line_no > camera->y){
-            xstart = curLine + (camera->x * 12);
-            xend = curLine + (camera->x * 12) + (container->width * 12) - 1;
+    Draw_Buffer_Fill(&draw_buff, map->data, camera->x, camera->y);
 
-            char r = *xend;
-            *xend = '\0';
-            printf("\033[%d;2H%s", ++i, xstart);
-            *xend = r;
-        }
-        
-        if (nextLine) *nextLine = '\n';  // then restore newline-char, just to be tidy    
-        curLine = nextLine ? (nextLine+1) : NULL;
-        line_no++;
-    }
+    player_draw(&game.player, &draw_buff, &game.camera, &game.view_port);
 
-    printf("\033[0m");
-
-    player_draw(&game.player, &game.camera, &game.view_port);
-    fflush(stdout);
+    Draw_Buffer_Display(&draw_buff, 2, 3);
 }
 
 void handle_resize(int term_w, int term_h) 
 {
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
+
+    draw_buff.w = game.view_port.width;
+    draw_buff.h = game.view_port.height - 1;
 
     game.camera.vw = game.view_port.width; // Seems weird that these are the same :/
     game.camera.vh = game.view_port.height;
