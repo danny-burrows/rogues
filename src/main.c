@@ -18,12 +18,24 @@
 /*
 TODO: 
 - Fix debug menu & proper debug interface!
+- perror debug interface.
 - Possibly temporary buffer for post processing.
 - Lighting / Mock shaders!
 - Buildings and interiors.
 - Inventory system.
 - NPC's and followers.
 */
+
+static const char *logo = 
+"  ▄████████  ▄██████▄     ▄██████▄   ███    █▄     ▄████████    ▄████████\n\
+  ███    ███ ███    ███   ███    ███ ███    ███   ███    ███   ███    ███ \n\
+  ███    ███ ███    ███   ███    █▀  ███    ███   ███    █▀    ███    █▀  \n\
+ ▄███▄▄▄▄██▀ ███    ███  ▄███        ███    ███  ▄███▄▄▄       ███        \n\
+▀▀███▀▀▀▀▀   ███    ███ ▀▀███ ████▄  ███    ███ ▀▀███▀▀▀     ▀███████████ \n\
+▀███████████ ███    ███   ███    ███ ███    ███   ███    █▄           ███ \n\
+  ███    ███ ███    ███   ███    ███ ███    ███   ███    ███    ▄█    ███ \n\
+  ███    ███  ▀██████▀    ████████▀  ████████▀    ██████████  ▄████████▀  \n\
+  ███    ███  Pre-Alpha                                                   \n";
 
 Game game = {
     .version = "v0.0.7",
@@ -35,6 +47,21 @@ Game game = {
     .camera = {0},
     .map = {0}
 };
+
+void draw_debug_panel(void) {
+    // Debug Menu
+    printf("\033[3;2H[INFO] Game Version %s", game.version);
+    
+    if (game.loaded) {
+        printf("\033[4;2H[INFO] Game save loaded successfully!");
+    } else {
+        printf("\033[4;2H[INFO] New game save created!");
+    }
+    
+    printf("\033[5;2H[INFO] Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
+    
+    fflush(stdout);
+}
 
 void render_scene(Map * map, Camera * camera, Ui_Box * container) {
     char *xstart, *xend;
@@ -83,14 +110,6 @@ void handle_resize(int term_w, int term_h)
 
     clear_term();
 
-    // Debug Menu
-    printf("\033[3;3H[DEBUG] Game Version %s", game.version);
-    if (game.loaded) {
-        printf("\033[4;3H[DEBUG] Game loaded successfully!");
-    } else {
-        printf("\033[4;3H[DEBUG] New game save created!");
-    }
-
     // Main UI Drawing
     draw_ui_box(&game.view_port);
     draw_ui_box(&game.control_surface);
@@ -100,12 +119,14 @@ void handle_resize(int term_w, int term_h)
     // Drawing Map
     center_camera_on_player(&game.player, &game.camera, &game.map);
     render_scene(&game.map, &game.camera, &game.view_port);
+
+#ifdef DCONFIGSET 
+    draw_debug_panel(); 
+#endif
 }
 
 void process_input(const char input) 
 {    
-    printf("\033[6;3H[DEBUG] Pressed Key: %c", input);
-
     switch (input)
     {
         case 119: // W
@@ -146,6 +167,10 @@ void process_input(const char input)
     }
 
     render_scene(&game.map, &game.camera, &game.view_port);
+
+#ifdef DCONFIGSET 
+    draw_debug_panel(); 
+#endif
 }
 
 
@@ -160,7 +185,6 @@ void *draw_thread(void *vargp)
     while (game.running) {
         usleep(100000);
         get_term_size(&width, &height);
-        printf("\033[5;3H[DEBUG] Terminal Size: %dx%d\n", width, height);
             
         if (width != pw || height != ph) {
             pw = width;
@@ -188,14 +212,16 @@ int main(void)
     pthread_t thread1, thread2;
     int  iret1, iret2;
 
+    printf("\033[38;2;130;130;130m%s\033[0m\n", logo);
+
 #ifdef DCONFIGSET
+    d_printf(INFO, "Welcome Developer! Game launched in debug mode.\n\n");
+
     printf("=========== DEBUG KEY ===========\n");
-    d_printf(DEBUG, "This is a debug message.\n");
+    d_printf(INFO, "This is a debug info message.\n");
     d_printf(WARN, "This is a warning.\n");
-    d_printf(ERR, "This is an error!\n");
+    d_printf(ERR,  "This is an error!\n");
     printf("=================================\n\n");
-    
-    d_printf(DEBUG, "Welcome Developer! Game launched in debug mode.\n\n");
 #endif
 
     // Load game...
@@ -204,7 +230,7 @@ int main(void)
     // If load failed and error is ENOENT (No such file or directory).
     if (r == -1 && errno == 2) 
     {
-        d_printf(DEBUG, "Attempting to load map & create new game...\n");
+        d_printf(INFO, "Attempting to load map & create new game...\n");
         if (load_map(&game.map) == -1) exit(EXIT_FAILURE);
 
         int width, height;
@@ -247,6 +273,6 @@ int main(void)
     // Save the game.
     save_game(&game);
 
-    d_printf(DEBUG, "Graceful exit. Thanks! :-)\n");
+    d_printf(INFO, "Graceful exit. Thanks! :-)\n");
     return 0;
 }

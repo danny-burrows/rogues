@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-enum DEBUG_LEVELS {
-    DEBUG,
+typedef enum {
+    INFO,
     WARN,
     ERR
-};
+} DEBUG_LEVEL;
 
-int d_printf(int debug_level, const char * format, ...);
+int d_printf(DEBUG_LEVEL debug_level, const char * format, ...);
 
 #endif
