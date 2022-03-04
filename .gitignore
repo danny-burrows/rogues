@@ -6,3 +6,6 @@ obj/
 
 # Save files
 data/saves/
+
+# Tools
+.vscode/
