@@ -25,19 +25,15 @@ int player_set_position(int x, int y, Player * player, const Map * map) {
 }
 
 void player_draw(const Player * player, Draw_Buffer *draw_buff, const Camera * camera, const Ui_Box * view_port) {
-    int x = player->x - camera->x;
+    int x = (player->x - camera->x) * 12;
     int y = player->y - camera->y;
 
-    strcpy(&draw_buff->data[y]    [x*12], "\033[38;5;247m \033[38;5;247mo\033[38;5;247m \033[38;5;247m^");
-    strcpy(&draw_buff->data[y + 1][x*12], "\033[38;5;247m(\033[38;5;247m|\033[38;5;247m~\033[38;5;247m|");
-    strcpy(&draw_buff->data[y + 2][x*12], "\033[38;5;247m/\033[38;5;247m \033[38;5;247m\\");
+    char player_texture[] = 
+"\033[38;5;247m \033[38;5;247mo\033[38;5;247m \033[38;5;247m^\n\
+\033[38;5;247m(\033[38;5;247m|\033[38;5;247m~\033[38;5;247m|\n\
+\033[38;5;247m/\033[38;5;247m \033[38;5;247m\\";
 
-    // Overwrite the \0 of the copied string...
-    draw_buff->data[y    ][x*12 +12+12+12+12] = '\033';
-
-    draw_buff->data[y + 1][x*12 +12+12+12+12] = '\033';
-
-    draw_buff->data[y + 2][x*12 +12+12+12]    = '\033';
+    Draw_Buffer_AddString(draw_buff, player_texture, sizeof(player_texture), x, y);
 }
 
 int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port) {

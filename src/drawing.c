@@ -32,6 +32,32 @@ void Draw_Buffer_Fill(Draw_Buffer *buffer, char *source_string, int source_start
     }
 }
 
+int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_len, int x, int y)
+{
+    if (x < 0 || y < 0 || string_len < 1) return -1;
+
+    int tx = x;
+    int ty = y;
+    while (*string) {
+
+        // If we see a \n char we add a newline.
+        if (*string == '\n') {
+            if (ty >= buffer->h) return -1;
+            tx = x;
+            ty++; string++;
+            continue;
+        }
+
+        if (tx >= buffer->w * 12) return -1;
+
+        buffer->data[ty][tx] = *string;
+
+        tx++; string++;
+    }
+
+    return 0;
+}
+
 void Draw_Buffer_Display(Draw_Buffer *buffer, int draw_start_x, int draw_start_y) 
 {
     for (int i = 0; i < buffer->h; i++) {

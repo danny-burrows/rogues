@@ -19,6 +19,8 @@ typedef struct {
 
 void Draw_Buffer_Fill(Draw_Buffer *buffer, char *source_string, int source_start_x, int source_start_y);
 
+int  Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_len, int x, int y);
+
 void Draw_Buffer_Display(Draw_Buffer *buffer, int draw_start_x, int draw_start_y);
 
 #endif
