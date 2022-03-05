@@ -48,7 +48,7 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_le
             continue;
         }
 
-        if (tx >= buffer->w) return -1;
+        if (tx >= buffer->w - 1) return -1;
 
         buffer->data[ty][tx] = *string;
 
@@ -64,8 +64,6 @@ void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
 
         for (int j = 0; j < buffer->w; j++) {
             
-            if (buffer->data[i][j] == '\n') continue;
-
             printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->colormap[i][j].r, buffer->colormap[i][j].b, buffer->colormap[i][j].g, buffer->data[i][j]);
         
         }

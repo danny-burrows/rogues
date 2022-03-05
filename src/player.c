@@ -44,6 +44,10 @@ int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, U
 }
 
 void player_step_right(Player * player, Camera * camera, Map * map) {
+
+    if (player->x + 1 + 4 > map->width) return;
+    //                  ^Player width
+
     int max_x = ((3 * camera->vw) / 4) + camera->x;
 
     // Check if player is stepping outside the inner area...
@@ -54,6 +58,9 @@ void player_step_right(Player * player, Camera * camera, Map * map) {
 }
 
 void player_step_left(Player * player, Camera * camera, Map * map) {
+
+    if (player->x - 1 < 0) return;
+
     int min_x = (camera->vw / 4) + camera->x;
 
     if (player->x-- < min_x) {
@@ -63,6 +70,9 @@ void player_step_left(Player * player, Camera * camera, Map * map) {
 }
 
 void player_step_up(Player * player, Camera * camera, Map * map) {
+
+    if (player->y - 1 < 0) return;
+
     int min_y = (camera->vh / 4) + camera->y;
 
     if (player->y-- < min_y) {
@@ -72,6 +82,10 @@ void player_step_up(Player * player, Camera * camera, Map * map) {
 }
 
 void player_step_down(Player * player, Camera * camera, Map * map) {
+    
+    if (player->y + 1 + 5 > map->height) return;
+    //                  ^Player height
+
     int max_y = ((3 * camera->vh) / 4) + camera->y - 3;
 
     if (player->y++ > max_y) {

@@ -7,15 +7,15 @@
 
 #include "color.h"
 
-#define DRAW_BUFFER_MAX_X 1000
-#define DRAW_BUFFER_MAX_Y 250
+#define DRAW_BUFFER_MAX_X 225
+#define DRAW_BUFFER_MAX_Y 100
 
 typedef struct {
 
     int w;
     int h;
 
-    char data[DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
+    char  data    [DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
     Color colormap[DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
 
 } Draw_Buffer;

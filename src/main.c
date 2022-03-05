@@ -199,8 +199,8 @@ void handle_resize(int term_w, int term_h)
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
 
-    draw_buff.w = game.view_port.width;
-    draw_buff.h = game.view_port.height - 1;
+    draw_buff.w = game.view_port.width > DRAW_BUFFER_MAX_X ? DRAW_BUFFER_MAX_X : game.view_port.width;
+    draw_buff.h = game.view_port.height - 1 > DRAW_BUFFER_MAX_Y ? DRAW_BUFFER_MAX_Y : game.view_port.height - 1;
 
     game.camera.vw = game.view_port.width; // Seems weird that these are the same :/
     game.camera.vh = game.view_port.height;
