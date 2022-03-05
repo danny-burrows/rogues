@@ -1,3 +1,4 @@
+#include <math.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -44,7 +45,7 @@ Game game = {
     .loaded = 0,
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
-    .player = {100, 20, 100.0f},
+    .player = {20, 5, 100.0f},
     .camera = {0},
     .map = {0}
 };
@@ -70,9 +71,30 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
     Draw_Buffer_Fill(&draw_buff, map->data, camera->x, camera->y);
 
+    // Fill color map...
+    for (int i = camera->y; i < camera->y + draw_buff.h; i++) {
+
+        for (int j = camera->x; j < camera->x + draw_buff.w; j++) {
+
+            draw_buff.colormap[i - camera->y][j - camera->x] = map->color_data[i * 221 + j];
+
+
+            // Attempt at a shader-like thing...
+            double dist = sqrt((game.player.y - i) * (game.player.y - i) + (game.player.x - j) * (game.player.x - j));
+
+            unsigned char *r = &draw_buff.colormap[i - camera->y][j - camera->x].r;
+            unsigned char *g = &draw_buff.colormap[i - camera->y][j - camera->x].g;
+            unsigned char *b = &draw_buff.colormap[i - camera->y][j - camera->x].b;
+
+            *r = *r / (dist/10) < 256 ? *r / (dist/10) : 255;
+            *g = *g / (dist/10) < 256 ? *g / (dist/10) : 255;
+            *b = *b / (dist/10) < 256 ? *b / (dist/10) : 255;
+        }
+    }
+
     player_draw(&game.player, &draw_buff, &game.camera, &game.view_port);
 
-    Draw_Buffer_Display(&draw_buff, 2, 3);
+    Draw_Buffer_Render(&draw_buff, 2, 3);
 }
 
 void handle_resize(int term_w, int term_h) 
@@ -191,18 +213,15 @@ void *blocking_keys(void *vargp)
 
 int main(void)
 {
-    pthread_t thread1, thread2;
-    int  iret1, iret2;
-
     printf("\033[38;2;130;130;130m%s\033[0m\n", logo);
 
 #ifdef DCONFIGSET
     d_printf(INFO, "Welcome Developer! Game launched in debug mode.\n\n");
 
     printf("=========== DEBUG KEY ===========\n");
-    d_printf(INFO, "This is a debug info message.\n");
+    d_printf(INFO, "This is an info message.\n");
     d_printf(WARN, "This is a warning.\n");
-    d_printf(ERR,  "This is an error!\n");
+    d_printf(ERR, " This is an error!\n");
     printf("=================================\n\n");
 #endif
 
@@ -210,21 +229,14 @@ int main(void)
     int r = load_game(&game);
     
     // If load failed and error is ENOENT (No such file or directory).
-    if (r == -1 && errno == 2) 
+    if (r == -1 && errno == ENOENT) 
     {
         d_printf(INFO, "Attempting to load map & create new game...\n");
-        if (load_map(&game.map) == -1) exit(EXIT_FAILURE);
-
-        int width, height;
-        get_term_size(&width, &height);
-        game.player.x = width / 2;
-        game.player.y = height / 2;
-
-        if (save_game(&game) == -1) exit(EXIT_FAILURE);
+        if (load_map(&game.map) == -1 || save_game(&game) == -1) return EXIT_FAILURE;
     } 
     else if (r == -1) 
     {
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     printf("Press enter to begin...\n");
@@ -239,11 +251,12 @@ int main(void)
     set_conio_terminal_mode();
 
     // Start thread for keyboard input and resizing screen.
-    iret2 = pthread_create( &thread2, NULL, draw_thread, NULL);
-    iret1 = pthread_create( &thread1, NULL, blocking_keys, NULL);
+    pthread_t drawing_thread, blocking_keys_thread;
+    int iret2 = pthread_create(&drawing_thread, NULL, draw_thread, NULL);
+    int iret1 = pthread_create(&blocking_keys_thread, NULL, blocking_keys, NULL);
 
-    pthread_join( thread1, NULL);
-    pthread_join( thread2, NULL);
+    pthread_join(blocking_keys_thread, NULL);
+    pthread_join(drawing_thread, NULL);
 
     // Clear screen and reset terminal.
     clear_term();

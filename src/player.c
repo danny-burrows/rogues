@@ -25,13 +25,15 @@ int player_set_position(int x, int y, Player * player, const Map * map) {
 }
 
 void player_draw(const Player * player, Draw_Buffer *draw_buff, const Camera * camera, const Ui_Box * view_port) {
-    int x = (player->x - camera->x) * 12;
+    int x = (player->x - camera->x);
     int y = player->y - camera->y;
 
     char player_texture[] = 
-"\033[38;5;247m \033[38;5;247mo\033[38;5;247m \033[38;5;247m^\n\
-\033[38;5;247m(\033[38;5;247m|\033[38;5;247m~\033[38;5;247m|\n\
-\033[38;5;247m/\033[38;5;247m \033[38;5;247m\\";
+"\
+ o ^\n\
+(|~|\n\
+/ \\\
+";
 
     Draw_Buffer_AddString(draw_buff, player_texture, sizeof(player_texture), x, y);
 }
