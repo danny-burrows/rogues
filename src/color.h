@@ -2,9 +2,9 @@
 #define ROGUES_COLOR_H
 
 typedef struct {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
 } Color;
 
 #endif

@@ -13,6 +13,8 @@ typedef struct {
     char version[64];
     int running;
     int loaded;
+    int day;
+    double time;
     Ui_Box view_port;
     Ui_Box control_surface;
     Player player;

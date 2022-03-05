@@ -34,7 +34,7 @@ int load_map(Map *map)
 
         while (*s) {
             
-            sscanf(s, "\033[38;2;%hhu;%hhu;%hhum%c", &map->color_data[i].r, &map->color_data[i].b, &map->color_data[i].g, &map->data[i]);
+            sscanf(s, "\033[38;2;%u;%u;%um%c", &map->color_data[i].r, &map->color_data[i].b, &map->color_data[i].g, &map->data[i]);
 
             if (*s == '\n') {
                 map->data[i] = '\n';

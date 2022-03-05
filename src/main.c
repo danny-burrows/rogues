@@ -17,6 +17,8 @@
 #include "terminal.h"
 #include "saved_games.h"
 
+#define PI 3.14159
+
 /*
 TODO: 
 - Fix debug menu & proper debug interface!
@@ -40,9 +42,11 @@ static const char *logo =
   ███    ███  Pre-Alpha                                                   \n";
 
 Game game = {
-    .version = "v0.0.7",
+    .version = "v0.0.8",
     .running = 0,
     .loaded = 0,
+    .day = 0,
+    .time = 0,
     .view_port = {1, 2, 1, 1, 0, 0, 0, 0},
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
     .player = {20, 5, 100.0f},
@@ -50,7 +54,33 @@ Game game = {
     .map = {0}
 };
 
+int prev_day = 0;
+int daytime_counter = 0;
 Draw_Buffer draw_buff;
+
+int daytime_function(int x) {
+    int speed_of_time = 30;
+    int min_darkness = 30;
+
+    // Controls the speed of a day :/
+    float p = (float)x / speed_of_time;
+
+    int time_val = 100 * sin(p) + 50;
+
+    return time_val < min_darkness ? min_darkness : time_val;
+}
+
+int daytime_period(int x) {
+    int speed_of_time = 30;
+    int min_darkness = 30;
+
+    // Controls the speed of a day :/
+    float p = (float)x / speed_of_time;
+
+    int time_val = 100 * sin(p) + 50;
+
+    return time_val < min_darkness ? min_darkness : time_val;
+}
 
 void draw_debug_panel(void) {
     // Debug Menu
@@ -64,6 +94,12 @@ void draw_debug_panel(void) {
     
     printf("\033[5;2H[INFO] Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
     
+    int day = daytime_function(daytime_counter);
+    printf("\033[6;2H[INFO] Day val: %d", day);
+
+    printf("\033[7;2H[INFO] Day: %d", game.day);
+    printf("\033[8;2H[INFO] Time: %f", game.time);
+
     fflush(stdout);
 }
 
@@ -78,23 +114,84 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
             draw_buff.colormap[i - camera->y][j - camera->x] = map->color_data[i * 221 + j];
 
-
             // Attempt at a shader-like thing...
-            double dist = sqrt((game.player.y - i) * (game.player.y - i) + (game.player.x - j) * (game.player.x - j));
+            double dist = sqrt((game.player.y - i) * (game.player.y - i) * 4 + (game.player.x - j) * (game.player.x - j));
+            dist = dist / (double)sqrt((game.player.y - camera->y + camera->vh) * (game.player.y - camera->y + camera->vh) * 4 + (game.player.x - camera->x + camera->vw) * (game.player.x - camera->x + camera->vw));
 
-            unsigned char *r = &draw_buff.colormap[i - camera->y][j - camera->x].r;
-            unsigned char *g = &draw_buff.colormap[i - camera->y][j - camera->x].g;
-            unsigned char *b = &draw_buff.colormap[i - camera->y][j - camera->x].b;
+            unsigned int *r = &draw_buff.colormap[i - camera->y][j - camera->x].r;
+            unsigned int *g = &draw_buff.colormap[i - camera->y][j - camera->x].g;
+            unsigned int *b = &draw_buff.colormap[i - camera->y][j - camera->x].b;
 
-            *r = *r / (dist/10) < 256 ? *r / (dist/10) : 255;
-            *g = *g / (dist/10) < 256 ? *g / (dist/10) : 255;
-            *b = *b / (dist/10) < 256 ? *b / (dist/10) : 255;
+            // Day-Night with some distant fading.
+            *r = *r * game.time * (1-dist);
+            *g = *g * game.time * (1-dist);
+            *b = *b * game.time * (1-dist);
+
+            if (game.time < 0.45f) {
+                // Nighttime torch and extra dark
+                double mul = (1-5*dist) > 0 ? (1-5*dist) : 0;
+
+                *r = *r * 4.0f * mul;
+                *g = *g * 4.0f * mul;
+                *b = *b * 4.0f * mul;
+
+                // Night should be dark...
+                *r = *r < 20 ? 0 : *r;
+                *g = *g < 20 ? 0 : *g;
+                *b = *b < 20 ? 0 : *b;
+
+                // Red tinge from torch.
+                if (dist < .15f) {
+                   *r += (rand() % 200) * (mul/3);
+                }
+
+            }
+
+            // Clap colour values at 255.
+            *r = *r > 255 ? 255 : *r;
+            *g = *g > 255 ? 255 : *g;
+            *b = *b > 255 ? 255 : *b;
+
+
+            *r = *r < 0 ? 0 : *r;
+            *g = *g < 0 ? 0 : *g;
+            *b = *b < 0 ? 0 : *b;
         }
     }
 
     player_draw(&game.player, &draw_buff, &game.camera, &game.view_port);
 
+    int player_rel_x = game.player.x - game.camera.x;
+    int player_rel_y = game.player.y - game.camera.y;
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            draw_buff.colormap[player_rel_y + j][player_rel_x + i].r = 255;
+            draw_buff.colormap[player_rel_y + j][player_rel_x + i].g = 255;
+            draw_buff.colormap[player_rel_y + j][player_rel_x + i].b = 255;
+        }
+    }
+
+    // The stick!
+    if (game.time < 0.45f) {
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].r = 225 + (rand() % 30);
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].g = 87;
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].b = 87;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].r = 150;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].g = 75;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].b = 85;
+    } else {
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].r = 250;
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].g = 175;
+        draw_buff.colormap[player_rel_y][player_rel_x + 3].b = 185;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].r = 150;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].g = 75;
+        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].b = 85;
+    }
+
     Draw_Buffer_Render(&draw_buff, 2, 3);
+
+    draw_debug_panel();
 }
 
 void handle_resize(int term_w, int term_h) 
@@ -188,6 +285,20 @@ void *draw_thread(void *vargp)
 
     while (game.running) {
         usleep(100000);
+
+        daytime_counter++;
+
+        game.time = (double)daytime_function(daytime_counter) / 100.0f;
+
+        if (daytime_function(daytime_counter) != prev_day) render_scene(&game.map, &game.camera, &game.view_port);
+
+        if (game.time < 0.45f && !(daytime_counter % 7)) render_scene(&game.map, &game.camera, &game.view_port);
+
+        prev_day = daytime_function(daytime_counter);
+
+        double sign_period = (2 * PI) / 0.033333f;
+        game.day = (daytime_counter / sign_period) + 1;
+
         get_term_size(&width, &height);
             
         if (width != pw || height != ph) {
