@@ -1,7 +1,14 @@
 #include "player.h"
 
-#define PLAYER_HEIGHT 3
-#define PLAYER_WIDTH 3
+#define PLAYER_HEIGHT 5
+#define PLAYER_WIDTH 4
+
+const char *player_texture = "\
+ o ^\n\
+(|~|\n\
+/ \\\
+";
+
 
 void player_set_health(Player * player, float health) {
     if (health < 0) {
@@ -24,20 +31,6 @@ int player_set_position(int x, int y, Player * player, const Map * map) {
     player->y = y;
 }
 
-void player_draw(const Player * player, Draw_Buffer *draw_buff, const Camera * camera, const Ui_Box * view_port) {
-    int x = (player->x - camera->x);
-    int y = player->y - camera->y;
-
-    char player_texture[] = 
-"\
- o ^\n\
-(|~|\n\
-/ \\\
-";
-
-    Draw_Buffer_AddString(draw_buff, player_texture, sizeof(player_texture), x, y);
-}
-
 int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port) {
     player_set_position(x, y, player, map);
     camera_center_on_point(camera, player->x, player->y, map->width, map->height);
@@ -45,8 +38,7 @@ int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, U
 
 void player_step_right(Player * player, Camera * camera, Map * map) {
 
-    if (player->x + 1 + 4 > map->width) return;
-    //                  ^Player width
+    if (player->x + 1 + PLAYER_WIDTH > map->width) return;
 
     int max_x = ((3 * camera->vw) / 4) + camera->x;
 
@@ -83,8 +75,7 @@ void player_step_up(Player * player, Camera * camera, Map * map) {
 
 void player_step_down(Player * player, Camera * camera, Map * map) {
     
-    if (player->y + 1 + 5 > map->height) return;
-    //                  ^Player height
+    if (player->y + 1 + PLAYER_HEIGHT > map->height) return;
 
     int max_y = ((3 * camera->vh) / 4) + camera->y - 3;
 

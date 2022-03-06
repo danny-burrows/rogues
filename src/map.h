@@ -5,37 +5,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "color.h"
 #include "debug.h"
+#include "drawing.h"
 
-
-#define MAX_MAP_SIZE (221 * 100) // Map should be 220x100 + 1 per line for the \n
-#define MAP_FILE_PATH "./data/map/map.ansi"
+#define MAP_WIDTH  220
+#define MAP_HEIGHT 100
+#define PIXEL_WIDTH 20
 
 /*
 The map.ansi file is assumed to be an ansi file of rectangle proportions
-where each char (with ansi code) takes up 20 bytes. The 20 bytes 
-is for the ESC char and the colour settings in ansi true colour...
+where each char (with ansi code) takes up PIXEL_WIDTH bytes. These bytes 
+consist of the ESC char and the color settings in ansi true colour...
 
     xxxxxx
     xxxxxx <- IMPORTANT: ALL LINES MUST BE THE SAME LENGTH!!!!
     xxxxxx
-
-We will get the dimensions by querying the number of lines
-and the length of the first line.
 */
 
-typedef struct  {
-    int size;
-    int width;
-    int height;
-    
-    char  data[MAX_MAP_SIZE];
-    Color color_data[MAX_MAP_SIZE * sizeof(Color)];
-} Map;
+// Each line we read is 'width' pixels and there is an '\n\0' at the end.
+#define READ_LINE_SIZE ((MAP_WIDTH * PIXEL_WIDTH) + 2) // <-- Very important that 
+                                                       // this is right to prevent segfaults :/
 
-int set_map_size(Map *map);
+#define Map Draw_Buffer
 
-int load_map(Map *map);
+int Map_Load(Map *map, const char *filepath);
 
 #endif

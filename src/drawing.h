@@ -5,27 +5,22 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "color.h"
+#include "utils.h"
 
-#define DRAW_BUFFER_MAX_X 225
+#define DRAW_BUFFER_MAX_X 220
 #define DRAW_BUFFER_MAX_Y 100
 
 typedef struct {
+    int width;
+    int height;
 
-    int w;
-    int h;
-
-    char  data    [DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
-    Color colormap[DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
-
+    Pixel data[DRAW_BUFFER_MAX_Y][DRAW_BUFFER_MAX_X];
 } Draw_Buffer;
 
-void Draw_Buffer_Fill(Draw_Buffer *buffer, char *source_string, int source_start_x, int source_start_y);
+void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x, int source_start_y);
 
-int  Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_len, int x, int y);
+int  Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y);
 
 void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y);
-
-void Draw_Buffer_Display(Draw_Buffer *buffer, int draw_start_x, int draw_start_y);
 
 #endif

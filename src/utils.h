@@ -1,10 +1,11 @@
-#ifndef ROGUES_COLOR_H
-#define ROGUES_COLOR_H
+#ifndef ROGUES_UTILS_H
+#define ROGUES_UTILS_H
 
 typedef struct {
     unsigned int r;
     unsigned int g;
     unsigned int b;
-} Color;
+    char  ch;
+} Pixel;
 
 #endif

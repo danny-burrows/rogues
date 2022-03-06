@@ -12,13 +12,13 @@ typedef struct {
     float health;
 } Player;
 
+extern const char *player_texture;
+
 void player_set_health(Player * player, float health);
 
 int player_set_position(int x, int y, Player * player, const Map * map);
 
 int player_teleport(int x, int y, Player * player, Camera * camera, Map * map, Ui_Box * view_port);
-
-void player_draw(const Player * player, Draw_Buffer *draw_buff, const Camera * camera, const Ui_Box * view_port);
 
 // Player movement
 void player_step_right(Player * player, Camera * camera, Map * map);

@@ -105,22 +105,20 @@ void draw_debug_panel(void) {
 
 void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
-    Draw_Buffer_Fill(&draw_buff, map->data, camera->x, camera->y);
+    Draw_Buffer_Copy(&draw_buff, map, camera->x, camera->y);
 
-    // Fill color map...
-    for (int i = camera->y; i < camera->y + draw_buff.h; i++) {
+    // Apply lighting effects.
+    for (int y = camera->y; y < camera->y + draw_buff.height; y++) {
 
-        for (int j = camera->x; j < camera->x + draw_buff.w; j++) {
-
-            draw_buff.colormap[i - camera->y][j - camera->x] = map->color_data[i * 221 + j];
+        for (int x = camera->x; x < camera->x + draw_buff.width; x++) {
 
             // Attempt at a shader-like thing...
-            double dist = sqrt((game.player.y - i) * (game.player.y - i) * 4 + (game.player.x - j) * (game.player.x - j));
+            double dist = sqrt((game.player.y - y) * (game.player.y - y) * 4 + (game.player.x - x) * (game.player.x - x));
             dist = dist / (double)sqrt((game.player.y - camera->y + camera->vh) * (game.player.y - camera->y + camera->vh) * 4 + (game.player.x - camera->x + camera->vw) * (game.player.x - camera->x + camera->vw));
 
-            unsigned int *r = &draw_buff.colormap[i - camera->y][j - camera->x].r;
-            unsigned int *g = &draw_buff.colormap[i - camera->y][j - camera->x].g;
-            unsigned int *b = &draw_buff.colormap[i - camera->y][j - camera->x].b;
+            unsigned int *r = &draw_buff.data[y - camera->y][x - camera->x].r;
+            unsigned int *g = &draw_buff.data[y - camera->y][x - camera->x].g;
+            unsigned int *b = &draw_buff.data[y - camera->y][x - camera->x].b;
 
             // Day-Night with some distant fading.
             *r = *r * game.time * (1-dist);
@@ -159,34 +157,27 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
         }
     }
 
-    player_draw(&game.player, &draw_buff, &game.camera, &game.view_port);
-
+    // Drawing the player
     int player_rel_x = game.player.x - game.camera.x;
     int player_rel_y = game.player.y - game.camera.y;
 
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            draw_buff.colormap[player_rel_y + j][player_rel_x + i].r = 255;
-            draw_buff.colormap[player_rel_y + j][player_rel_x + i].g = 255;
-            draw_buff.colormap[player_rel_y + j][player_rel_x + i].b = 255;
-        }
-    }
+    Draw_Buffer_AddString(&draw_buff, player_texture, player_rel_x, player_rel_y);    
 
-    // The stick!
+    // The players stick!
     if (game.time < 0.45f) {
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].r = 225 + (rand() % 30);
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].g = 87;
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].b = 87;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].r = 150;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].g = 75;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].b = 85;
+        draw_buff.data[player_rel_y][player_rel_x + 3].r = 225 + (rand() % 30);
+        draw_buff.data[player_rel_y][player_rel_x + 3].g = 87;
+        draw_buff.data[player_rel_y][player_rel_x + 3].b = 87;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].r = 150;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].g = 75;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].b = 85;
     } else {
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].r = 250;
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].g = 175;
-        draw_buff.colormap[player_rel_y][player_rel_x + 3].b = 185;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].r = 150;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].g = 75;
-        draw_buff.colormap[player_rel_y + 1][player_rel_x + 3].b = 85;
+        draw_buff.data[player_rel_y][player_rel_x + 3].r = 250;
+        draw_buff.data[player_rel_y][player_rel_x + 3].g = 175;
+        draw_buff.data[player_rel_y][player_rel_x + 3].b = 185;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].r = 150;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].g = 75;
+        draw_buff.data[player_rel_y + 1][player_rel_x + 3].b = 85;
     }
 
     Draw_Buffer_Render(&draw_buff, 2, 3);
@@ -199,8 +190,8 @@ void handle_resize(int term_w, int term_h)
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
 
-    draw_buff.w = game.view_port.width > DRAW_BUFFER_MAX_X ? DRAW_BUFFER_MAX_X : game.view_port.width;
-    draw_buff.h = game.view_port.height - 1 > DRAW_BUFFER_MAX_Y ? DRAW_BUFFER_MAX_Y : game.view_port.height - 1;
+    draw_buff.width = game.view_port.width > DRAW_BUFFER_MAX_X ? DRAW_BUFFER_MAX_X : game.view_port.width;
+    draw_buff.height = game.view_port.height - 1 > DRAW_BUFFER_MAX_Y ? DRAW_BUFFER_MAX_Y : game.view_port.height - 1;
 
     game.camera.vw = game.view_port.width; // Seems weird that these are the same :/
     game.camera.vh = game.view_port.height;
@@ -343,7 +334,7 @@ int main(void)
     if (r == -1 && errno == ENOENT) 
     {
         d_printf(INFO, "Attempting to load map & create new game...\n");
-        if (load_map(&game.map) == -1 || save_game(&game) == -1) return EXIT_FAILURE;
+        if (Map_Load(&game.map, "./data/map/map.ansi") == -1 || save_game(&game) == -1) return EXIT_FAILURE;
     } 
     else if (r == -1) 
     {

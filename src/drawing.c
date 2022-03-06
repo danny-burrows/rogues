@@ -1,40 +1,20 @@
 #include "drawing.h"
 
-void Draw_Buffer_Fill(Draw_Buffer *buffer, char *source_string, int source_start_x, int source_start_y) 
+void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x, int source_start_y) 
 {
-    char *xstart, *xend;
-
-    int wid = 0;
-    char * curLine = source_string;
-    int i = 0;
-    int line_no = 0;
-    while(curLine && i < buffer->h)
-    {
-        char * nextLine = strchr(curLine, '\n');
-        if (nextLine) *nextLine = '\0';  // temporarily terminate the current line
-        
-        if (line_no > source_start_y){
-            xstart = curLine + source_start_x;
-            xend = curLine + source_start_x + buffer->w - 1;
-
-            char r = *xend;
-            *xend = '\0';
-            
-            strcpy((char *)buffer->data[i], xstart);
-
-            *xend = r;
-            i++;
+    for (int y = 0; y < dest->height; y++) {
+        for (int x = 0; x < dest->width; x++) {
+            dest->data[source_start_y + y][source_start_x + x].ch = source->data[source_start_y + y][source_start_x + x].ch;
+            dest->data[source_start_y + y][source_start_x + x].r  = source->data[source_start_y + y][source_start_x + x].r;
+            dest->data[source_start_y + y][source_start_x + x].g  = source->data[source_start_y + y][source_start_x + x].g;
+            dest->data[source_start_y + y][source_start_x + x].b  = source->data[source_start_y + y][source_start_x + x].b;
         }
-        
-        if (nextLine) *nextLine = '\n';  // then restore newline-char, just to be tidy    
-        curLine = nextLine ? (nextLine + 1) : NULL;
-        line_no++;
     }
 }
 
-int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_len, int x, int y)
+int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y)
 {
-    if (x < 0 || y < 0 || string_len < 1) return -1;
+    if (x < 0 || y < 0) return -1;
 
     int tx = x;
     int ty = y;
@@ -42,15 +22,20 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_le
 
         // If we see a \n char we add a newline.
         if (*string == '\n') {
-            if (ty >= buffer->h) return -1;
+            if (ty >= buffer->height) return -1;
             tx = x;
             ty++; string++;
             continue;
         }
 
-        if (tx >= buffer->w - 1) return -1;
+        if (tx >= buffer->width - 1) return -1;
 
-        buffer->data[ty][tx] = *string;
+        buffer->data[ty][tx].ch = *string;
+
+        // Just using while for color...
+        buffer->data[ty][tx].r = 255;
+        buffer->data[ty][tx].g = 255;
+        buffer->data[ty][tx].b = 255;
 
         tx++; string++;
     }
@@ -60,25 +45,14 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int string_le
 
 void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y) 
 {
-    for (int i = 0; i < buffer->h; i++) {
+    for (int i = 0; i < buffer->height; i++) {
 
-        for (int j = 0; j < buffer->w; j++) {
+        for (int j = 0; j < buffer->width; j++) {
             
-            printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->colormap[i][j].r, buffer->colormap[i][j].b, buffer->colormap[i][j].g, buffer->data[i][j]);
+            printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->data[i][j].r, buffer->data[i][j].b, buffer->data[i][j].g, buffer->data[i][j].ch);
         
         }
 
-    }
-
-    printf("\033[0m");
-    fflush(stdout);
-}
-
-
-void Draw_Buffer_Display(Draw_Buffer *buffer, int draw_start_x, int draw_start_y) 
-{
-    for (int i = 0; i < buffer->h; i++) {
-        printf("\033[%d;%dH%s", draw_start_y + i, draw_start_x, buffer->data[i]);
     }
 
     printf("\033[0m");
