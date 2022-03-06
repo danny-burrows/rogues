@@ -39,7 +39,7 @@ static const char *logo =
 ▀███████████ ███    ███   ███    ███ ███    ███   ███    █▄           ███ \n\
   ███    ███ ███    ███   ███    ███ ███    ███   ███    ███    ▄█    ███ \n\
   ███    ███  ▀██████▀    ████████▀  ████████▀    ██████████  ▄████████▀  \n\
-  ███    ███  Pre-Alpha                                                   \n";
+ ███    ███  Pre-Alpha                                                   \n";
 
 Game game = {
     .version = "v0.0.8",
@@ -84,21 +84,27 @@ int daytime_period(int x) {
 
 void draw_debug_panel(void) {
     // Debug Menu
-    printf("\033[3;2H[INFO] Game Version %s", game.version);
+    printf("\033[2;3H─ DEBUG ─");
+    printf("\033[3;3H| Game Version %s", game.version);
     
     if (game.loaded) {
-        printf("\033[4;2H[INFO] Game save loaded successfully!");
+        printf("\033[4;3H| Game save loaded successfully!");
     } else {
-        printf("\033[4;2H[INFO] New game save created!");
+        printf("\033[4;3H| New game save created!");
     }
     
-    printf("\033[5;2H[INFO] Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
-    
-    int day = daytime_function(daytime_counter);
-    printf("\033[6;2H[INFO] Day val: %d", day);
+    printf("\033[5;3H| Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
+    printf("\033[6;3H| Player Pos: %d / %d  ", game.player.x, game.player.y);
+    printf("\033[7;3H| Camera Pos: %d / %d  ", game.camera.x, game.camera.y);
 
-    printf("\033[7;2H[INFO] Day: %d", game.day);
-    printf("\033[8;2H[INFO] Time: %f", game.time);
+    // Day & Time Values.
+    int day = daytime_function(daytime_counter);
+    int x_val = game.view_port.x + game.view_port.width - 16;
+    printf("\033[2;%dH─ DAY AND TIME ─", x_val);
+    printf("\033[3;%dH| Day: %d",     x_val, game.day);
+    printf("\033[4;%dH| Day val: %d", x_val, day);
+    printf("\033[5;%dH| Time: %.3f",  x_val, game.time);
+
 
     fflush(stdout);
 }
@@ -190,11 +196,11 @@ void handle_resize(int term_w, int term_h)
     game.view_port.width = term_w - 1;
     game.view_port.height = (.75f * term_h) - 2;
 
-    draw_buff.width = game.view_port.width > DRAW_BUFFER_MAX_X ? DRAW_BUFFER_MAX_X : game.view_port.width;
-    draw_buff.height = game.view_port.height - 1 > DRAW_BUFFER_MAX_Y ? DRAW_BUFFER_MAX_Y : game.view_port.height - 1;
+    game.camera.vw = game.view_port.width  - 1;
+    game.camera.vh = game.view_port.height - 1;
 
-    game.camera.vw = game.view_port.width; // Seems weird that these are the same :/
-    game.camera.vh = game.view_port.height;
+    draw_buff.width  = game.camera.vw > DRAW_BUFFER_MAX_X ? DRAW_BUFFER_MAX_X : game.camera.vw;
+    draw_buff.height = game.camera.vh > DRAW_BUFFER_MAX_Y ? DRAW_BUFFER_MAX_Y : game.camera.vh;
 
     game.control_surface.width = term_w - 1;
     game.control_surface.y = (.75f * term_h) + 1;

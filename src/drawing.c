@@ -4,10 +4,10 @@ void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x
 {
     for (int y = 0; y < dest->height; y++) {
         for (int x = 0; x < dest->width; x++) {
-            dest->data[source_start_y + y][source_start_x + x].ch = source->data[source_start_y + y][source_start_x + x].ch;
-            dest->data[source_start_y + y][source_start_x + x].r  = source->data[source_start_y + y][source_start_x + x].r;
-            dest->data[source_start_y + y][source_start_x + x].g  = source->data[source_start_y + y][source_start_x + x].g;
-            dest->data[source_start_y + y][source_start_x + x].b  = source->data[source_start_y + y][source_start_x + x].b;
+            dest->data[y][x].ch = source->data[source_start_y + y][source_start_x + x].ch;
+            dest->data[y][x].r  = source->data[source_start_y + y][source_start_x + x].r;
+            dest->data[y][x].g  = source->data[source_start_y + y][source_start_x + x].g;
+            dest->data[y][x].b  = source->data[source_start_y + y][source_start_x + x].b;
         }
     }
 }
@@ -28,7 +28,7 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y)
             continue;
         }
 
-        if (tx >= buffer->width - 1) return -1;
+        if (tx > buffer->width) return -1;
 
         buffer->data[ty][tx].ch = *string;
 
@@ -49,8 +49,11 @@ void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
 
         for (int j = 0; j < buffer->width; j++) {
             
+            // Background mode...
+            // printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->data[i][j].r, buffer->data[i][j].b, buffer->data[i][j].g,buffer->data[i][j].r/2, buffer->data[i][j].b/2, buffer->data[i][j].g/2, buffer->data[i][j].ch);
+            
             printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->data[i][j].r, buffer->data[i][j].b, buffer->data[i][j].g, buffer->data[i][j].ch);
-        
+
         }
 
     }
