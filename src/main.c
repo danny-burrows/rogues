@@ -17,7 +17,7 @@
 #include "terminal.h"
 #include "saved_games.h"
 
-#define PI 3.14159
+#define PI 3.14159f
 
 /*
 TODO: 

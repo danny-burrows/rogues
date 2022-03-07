@@ -11,7 +11,7 @@
 
 typedef struct {
     char version[64];
-    int running;
+    volatile int running;
     int loaded;
     int day;
     double time;
