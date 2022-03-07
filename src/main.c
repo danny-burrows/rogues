@@ -122,44 +122,47 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
             double dist = sqrt((game.player.y - y) * (game.player.y - y) * 4 + (game.player.x - x) * (game.player.x - x));
             dist = dist / (double)sqrt((game.player.y - camera->y + camera->vh) * (game.player.y - camera->y + camera->vh) * 4 + (game.player.x - camera->x + camera->vw) * (game.player.x - camera->x + camera->vw));
 
-            unsigned int *r = &draw_buff.data[y - camera->y][x - camera->x].r;
-            unsigned int *g = &draw_buff.data[y - camera->y][x - camera->x].g;
-            unsigned int *b = &draw_buff.data[y - camera->y][x - camera->x].b;
+            Pixel *pxl = &draw_buff.data[y - camera->y][x - camera->x];
 
             // Day-Night with some distant fading.
-            *r = *r * game.time * (1-dist);
-            *g = *g * game.time * (1-dist);
-            *b = *b * game.time * (1-dist);
+            pxl->r = pxl->r * game.time * (1-dist);
+            pxl->g = pxl->g * game.time * (1-dist);
+            pxl->b = pxl->b * game.time * (1-dist);
 
             if (game.time < 0.45f) {
                 // Nighttime torch and extra dark
                 double mul = (1-5*dist) > 0 ? (1-5*dist) : 0;
 
-                *r = *r * 4.0f * mul;
-                *g = *g * 4.0f * mul;
-                *b = *b * 4.0f * mul;
+                pxl->r = pxl->r * 4.0f * mul;
+                pxl->g = pxl->g * 4.0f * mul;
+                pxl->b = pxl->b * 4.0f * mul;
 
                 // Night should be dark...
-                *r = *r < 20 ? 0 : *r;
-                *g = *g < 20 ? 0 : *g;
-                *b = *b < 20 ? 0 : *b;
+                pxl->r = pxl->r < 20 ? 0 : pxl->r;
+                pxl->g = pxl->g < 20 ? 0 : pxl->g;
+                pxl->b = pxl->b < 20 ? 0 : pxl->b;
 
                 // Red tinge from torch.
                 if (dist < .15f) {
-                   *r += (rand() % 200) * (mul/3);
+                   pxl->r += (rand() % 200) * (mul/3);
                 }
 
             }
 
             // Clap colour values at 255.
-            *r = *r > 255 ? 255 : *r;
-            *g = *g > 255 ? 255 : *g;
-            *b = *b > 255 ? 255 : *b;
+            pxl->r = pxl->r > 255 ? 255 : pxl->r;
+            pxl->g = pxl->g > 255 ? 255 : pxl->g;
+            pxl->b = pxl->b > 255 ? 255 : pxl->b;
 
 
-            *r = *r < 0 ? 0 : *r;
-            *g = *g < 0 ? 0 : *g;
-            *b = *b < 0 ? 0 : *b;
+            pxl->r = pxl->r < 0 ? 0 : pxl->r;
+            pxl->g = pxl->g < 0 ? 0 : pxl->g;
+            pxl->b = pxl->b < 0 ? 0 : pxl->b;
+
+            // Inerpolate new colors for background.
+            pxl->bg_r = pxl->r / 3;
+            pxl->bg_g = pxl->g / 3;
+            pxl->bg_b = pxl->b / 3;
         }
     }
 

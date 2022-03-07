@@ -4,10 +4,22 @@ void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x
 {
     for (int y = 0; y < dest->height; y++) {
         for (int x = 0; x < dest->width; x++) {
-            dest->data[y][x].ch = source->data[source_start_y + y][source_start_x + x].ch;
-            dest->data[y][x].r  = source->data[source_start_y + y][source_start_x + x].r;
-            dest->data[y][x].g  = source->data[source_start_y + y][source_start_x + x].g;
-            dest->data[y][x].b  = source->data[source_start_y + y][source_start_x + x].b;
+
+            Pixel *src_pxl  = &source->data[source_start_y + y][source_start_x + x];
+            Pixel *dest_pxl = &dest->data[y][x];
+
+            dest_pxl->ch = src_pxl->ch;
+            dest_pxl->r  = src_pxl->r;
+            dest_pxl->g  = src_pxl->g;
+            dest_pxl->b  = src_pxl->b;
+
+            // Background
+            if (src_pxl->background) {
+                dest_pxl->background = true;
+                dest_pxl->bg_r  = dest_pxl->r / 3;
+                dest_pxl->bg_g  = dest_pxl->g / 3;
+                dest_pxl->bg_b  = dest_pxl->b / 3;
+            }
         }
     }
 }
@@ -32,32 +44,44 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y)
 
         buffer->data[ty][tx].ch = *string;
 
-        // Just using while for color...
+        // Just using white for color...
         buffer->data[ty][tx].r = 255;
         buffer->data[ty][tx].g = 255;
         buffer->data[ty][tx].b = 255;
 
         tx++; string++;
     }
-
     return 0;
 }
 
 void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y) 
 {
-    for (int i = 0; i < buffer->height; i++) {
-
-        for (int j = 0; j < buffer->width; j++) {
-            
-            // Background mode...
-            // printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->data[i][j].r, buffer->data[i][j].b, buffer->data[i][j].g,buffer->data[i][j].r/2, buffer->data[i][j].b/2, buffer->data[i][j].g/2, buffer->data[i][j].ch);
-            
-            printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, buffer->data[i][j].r, buffer->data[i][j].b, buffer->data[i][j].g, buffer->data[i][j].ch);
-
+    Pixel *pxl;
+    for (int i = 0; i < buffer->height; i++)
+    {
+        for (int j = 0; j < buffer->width; j++) 
+        {    
+            pxl = &buffer->data[i][j];
+            if (pxl->background) {
+                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
+                    pxl->r, 
+                    pxl->b, 
+                    pxl->g,
+                    pxl->bg_r, 
+                    pxl->bg_b, 
+                    pxl->bg_g, 
+                    pxl->ch
+                );
+            } else {
+                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
+                    pxl->r, 
+                    pxl->b, 
+                    pxl->g,
+                    pxl->ch
+                );
+            }
         }
-
     }
-
     printf("\033[0m");
     fflush(stdout);
 }
