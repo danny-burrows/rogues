@@ -21,10 +21,7 @@ $(obj_dir)/%.o: src/%.c $(hdrs) | $(obj_dir) $(save_dir)
 $(obj_dir) $(save_dir): 
 	mkdir $@
 
-.PHONY: tools clean
-
-tools:
-	gcc -o ./tools/makemap ./tools/makemap.c -g
+.PHONY: clean
 
 clean:
-	rm -rf $(obj_dir) $(save_dir) ./tools/makemap rogues 
+	rm -rf $(obj_dir) $(save_dir) rogues 
