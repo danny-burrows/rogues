@@ -83,28 +83,34 @@ int daytime_period(int x) {
 }
 
 void draw_debug_panel(void) {
+
+    int dbg_x = game.control_surface.x + 2;
+    int dbg_y = game.control_surface.y;
+
+    #define POS_PRINTF(x, y, ...) {printf("\033[%u;%uH", y, x);printf(__VA_ARGS__);}
+
     // Debug Menu
-    printf("\033[2;3H─ DEBUG ─");
-    printf("\033[3;3H| Game Version %s", game.version);
+    POS_PRINTF(dbg_x, dbg_y, " DEBUG ");
+    POS_PRINTF(dbg_x, dbg_y + 1, "Game Version %s", game.version);
     
     if (game.loaded) {
-        printf("\033[4;3H| Game save loaded successfully!");
+        POS_PRINTF(dbg_x, dbg_y + 2, "Game save loaded successfully!");
     } else {
-        printf("\033[4;3H| New game save created!");
+        POS_PRINTF(dbg_x, dbg_y + 2, "New game save created!");
     }
     
-    printf("\033[5;3H| Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
-    printf("\033[6;3H| Player Pos: %d / %d  ", game.player.x, game.player.y);
-    printf("\033[7;3H| Camera Pos: %d / %d  ", game.camera.x, game.camera.y);
+    POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
+    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d  ", game.player.x, game.player.y);
+    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d  ", game.camera.x, game.camera.y);
 
     // Day & Time Values.
     int day = daytime_function(daytime_counter);
-    int x_val = game.view_port.x + game.view_port.width - 16;
-    printf("\033[2;%dH─ DAY AND TIME ─", x_val);
-    printf("\033[3;%dH| Day: %d",     x_val, game.day);
-    printf("\033[4;%dH| Day val: %d", x_val, day);
-    printf("\033[5;%dH| Time: %.3f",  x_val, game.time);
+    int x_val = game.view_port.x + game.view_port.width - 26;
 
+    POS_PRINTF(x_val, dbg_y, " DAY AND TIME ");
+    POS_PRINTF(x_val, dbg_y + 1, "Day: %d", game.day);
+    POS_PRINTF(x_val, dbg_y + 2, "Day val: %3.d", day);
+    POS_PRINTF(x_val, dbg_y + 3, "Time: %.3f", game.time);
 
     fflush(stdout);
 }
