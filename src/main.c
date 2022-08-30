@@ -198,7 +198,10 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
     Draw_Buffer_Render(&draw_buff, 2, 3);
 
-    draw_debug_panel();
+    // TODO: This should probably not be here...
+#ifdef DCONFIGSET 
+    draw_debug_panel(); 
+#endif
 }
 
 void handle_resize(int term_w, int term_h) 
@@ -227,10 +230,6 @@ void handle_resize(int term_w, int term_h)
     // Drawing Map
     camera_center_on_point(&game.camera, game.player.x, game.player.y, game.map.width, game.map.height);
     render_scene(&game.map, &game.camera, &game.view_port);
-
-#ifdef DCONFIGSET 
-    draw_debug_panel(); 
-#endif
 }
 
 void process_input(const char input) 
@@ -276,10 +275,6 @@ void process_input(const char input)
     }
 
     render_scene(&game.map, &game.camera, &game.view_port);
-
-#ifdef DCONFIGSET 
-    draw_debug_panel(); 
-#endif
 }
 
 
@@ -298,9 +293,9 @@ void *draw_thread(void *vargp)
 
         game.time = (double)daytime_function(daytime_counter) / 100.0f;
 
-        if (daytime_function(daytime_counter) != prev_day || 
-                game.time < 0.45f && !(daytime_counter % 7)) 
-            render_scene(&game.map, &game.camera, &game.view_port);
+        // if (daytime_function(daytime_counter) != prev_day || 
+        //         game.time < 0.45f && !(daytime_counter % 7)) 
+        //     render_scene(&game.map, &game.camera, &game.view_port);
 
         prev_day = daytime_function(daytime_counter);
 
