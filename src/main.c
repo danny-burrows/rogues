@@ -10,6 +10,7 @@
 
 #include "ui.h"
 #include "map.h"
+#include "keys.h"
 #include "debug.h"
 #include "camera.h"
 #include "player.h"
@@ -233,34 +234,35 @@ void handle_resize(int term_w, int term_h)
 }
 
 void process_input(const char input) 
-{    
+{
     switch (input)
     {
-        case 119: // W
+        case KEY_W:
             player_step_up(&game.player, &game.camera, &game.map);
             break;
-        case 115: // S
-            player_step_down(&game.player, &game.camera, &game.map);
-            break;
-        case 97:  // A
+        case KEY_A:
             player_step_left(&game.player, &game.camera, &game.map);
             break;
-        case 100: // D
+        case KEY_S:
+            player_step_down(&game.player, &game.camera, &game.map);
+            break;
+        case KEY_D:
             player_step_right(&game.player, &game.camera, &game.map);
             break;
-        case 105: // I Top Extreme Teleport.
+        case KEY_I: // Top Extreme Teleport.
             player_teleport(game.map.width / 2, 4, &game.player, &game.camera, &game.map, &game.view_port);
             break;
-        case 106: // J Left Extreme Teleport.
+        case KEY_J: // Left Extreme Teleport.
             player_teleport(4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
             break;
-        case 107: // K Bottom Extreme Teleport.
+        case KEY_K: // Bottom Extreme Teleport.
             player_teleport(game.map.width / 2, game.map.height - 4, &game.player, &game.camera, &game.map, &game.view_port);
             break;
-        case 108: // L Right Extreme Teleport.
+        case KEY_L: // Right Extreme Teleport.
             player_teleport(game.map.width - 4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
             break;
-        case 27:
+        case KEY_Q:
+        case KEY_ESC:
             // Empty any remaining chars in stdin...
             while (kbhit()){
                 (void)getch();
@@ -319,13 +321,9 @@ void *draw_thread(void *vargp)
 
 void *blocking_keys(void *vargp) 
 {
-    char c;
-    int ret;
-    while (game.running) {
+    while (game.running)
         // Block and wait to read from stdin.
-        c = getch();
-        process_input(c);
-    }
+        process_input(getch());
 }
 
 int main(void)
