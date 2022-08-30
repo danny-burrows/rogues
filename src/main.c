@@ -296,9 +296,9 @@ void *draw_thread(void *vargp)
 
         game.time = (double)daytime_function(daytime_counter) / 100.0f;
 
-        if (daytime_function(daytime_counter) != prev_day) render_scene(&game.map, &game.camera, &game.view_port);
-
-        if (game.time < 0.45f && !(daytime_counter % 7)) render_scene(&game.map, &game.camera, &game.view_port);
+        if (daytime_function(daytime_counter) != prev_day || 
+                game.time < 0.45f && !(daytime_counter % 7)) 
+            render_scene(&game.map, &game.camera, &game.view_port);
 
         prev_day = daytime_function(daytime_counter);
 
