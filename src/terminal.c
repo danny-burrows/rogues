@@ -68,10 +68,20 @@ void init_terminal(char * game_version) {
     // Set cursor to top of screen.
     printf("\033[1;1H");
 
+    // Hide cursor in release mode.
+#ifndef DCONFIGSET
+    printf("\033[?25l");
+#endif
+
     fflush(stdout);
 }
 
 void reset_terminal(void) {
     // Switch back to main stdout buffer.
     printf("\033[?1049l");
+
+    // Re-enable cursor in release mode.
+#ifndef DCONFIGSET
+    printf("\033[?25h");
+#endif
 }
