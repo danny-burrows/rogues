@@ -275,7 +275,7 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
             for (int i = 0; i < 8; i++) {
                 Point player_point, current_point;
 
-                player_point.x  = game.player.x;
+                player_point.x  = game.player.x + 1;
                 player_point.y  = game.player.y;
                 current_point.x = x;
                 current_point.y = y;
