@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 #include "game.h"
 
@@ -22,10 +23,7 @@
 
 /*
 TODO: 
-- Fix debug menu & proper debug interface!
 - perror debug interface.
-- Possibly temporary buffer for post processing.
-- Lighting / Mock shaders!
 - Buildings and interiors.
 - Inventory system.
 - NPC's and followers.
@@ -52,8 +50,13 @@ Game game = {
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
     .player = {20, 5, 100.0f},
     .camera = {0},
-    .map = {0}
+    .map = {0},
+    .render_request = RENDER_REQUEST_GAME_STARTUP
 };
+
+double TIME_FOR_60_FRAMES;
+double TIME_FOR_FRAME;
+double FPS;
 
 int prev_day = 0;
 int daytime_counter = 0;
@@ -100,9 +103,16 @@ void draw_debug_panel(void) {
         POS_PRINTF(dbg_x, dbg_y + 2, "New game save created!");
     }
     
-    POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
-    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d  ", game.player.x, game.player.y);
-    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d  ", game.camera.x, game.camera.y);
+    // Leaving extra space to cover format overflows on || large numbers
+    //                                                  \/ 
+    POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d     ", game.view_port.width, game.view_port.height);
+    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos:    %d / %d   ", game.player.x, game.player.y);
+    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos:    %d / %d   ", game.camera.x, game.camera.y);
+    
+    POS_PRINTF(dbg_x + 40, dbg_y + 1, "FPS:                 %.2f    ", FPS);
+    POS_PRINTF(dbg_x + 40, dbg_y + 2, "FRAME RENDER TIME:   %.2fs   ", TIME_FOR_FRAME);
+    POS_PRINTF(dbg_x + 40, dbg_y + 3, "TIME FOR 60 FRAMES:  %.2fs   ", TIME_FOR_60_FRAMES);
+    POS_PRINTF(dbg_x + 40, dbg_y + 4, "Last Render Request: %d      ", game.render_request);
 
     // Day & Time Values.
     int day = daytime_function(daytime_counter);
@@ -198,7 +208,10 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
     Draw_Buffer_Render(&draw_buff, 2, 3);
 
-    draw_debug_panel();
+    // TODO: This should probably not be here...
+#ifdef DCONFIGSET 
+    draw_debug_panel(); 
+#endif
 }
 
 void handle_resize(int term_w, int term_h) 
@@ -226,11 +239,8 @@ void handle_resize(int term_w, int term_h)
 
     // Drawing Map
     camera_center_on_point(&game.camera, game.player.x, game.player.y, game.map.width, game.map.height);
-    render_scene(&game.map, &game.camera, &game.view_port);
-
-#ifdef DCONFIGSET 
-    draw_debug_panel(); 
-#endif
+    
+    game.render_request = RENDER_REQUEST_WINDOW_RESIZE;
 }
 
 void process_input(const char input) 
@@ -275,11 +285,7 @@ void process_input(const char input)
             break;
     }
 
-    render_scene(&game.map, &game.camera, &game.view_port);
-
-#ifdef DCONFIGSET 
-    draw_debug_panel(); 
-#endif
+    game.render_request = RENDER_REQUEST_PLAYER_INPUT;
 }
 
 
@@ -300,7 +306,7 @@ void *draw_thread(void *vargp)
 
         if (daytime_function(daytime_counter) != prev_day || 
                 game.time < 0.45f && !(daytime_counter % 7)) 
-            render_scene(&game.map, &game.camera, &game.view_port);
+            game.render_request = RENDER_REQUEST_DAYTIME_UPDATE;
 
         prev_day = daytime_function(daytime_counter);
 
@@ -369,6 +375,37 @@ int main(void)
     pthread_t drawing_thread, blocking_keys_thread;
     int iret2 = pthread_create(&drawing_thread, NULL, draw_thread, NULL);
     int iret1 = pthread_create(&blocking_keys_thread, NULL, blocking_keys, NULL);
+
+    // Main draw loop.
+    struct timeval fps_time_start, fps_time_end;
+
+    int frame_count = 0;
+    const int FPS_INTERVAL = 60;
+    gettimeofday(&fps_time_start, NULL);
+    while (game.running) {
+
+        // Check for draw calls at a max of 60fps
+        while (game.render_request == RENDER_REQUEST_NOT_REQUESTED) {
+            usleep(1000000 / 60);
+        }
+        game.render_request = RENDER_REQUEST_NOT_REQUESTED;
+
+        // Calculate live FPS 
+        if (frame_count++ >= FPS_INTERVAL) {
+            gettimeofday(&fps_time_end, NULL);
+
+            long seconds = (fps_time_end.tv_sec - fps_time_start.tv_sec);
+            TIME_FOR_60_FRAMES = ((double)(seconds * 1000000) + fps_time_end.tv_usec) - (fps_time_start.tv_usec);
+            TIME_FOR_60_FRAMES /= 1000000.0;
+            TIME_FOR_FRAME = TIME_FOR_60_FRAMES / frame_count;
+            FPS = (double)frame_count / TIME_FOR_60_FRAMES;
+
+            frame_count = 0;
+            gettimeofday(&fps_time_start, NULL);
+        }
+
+        render_scene(&game.map, &game.camera, &game.view_port);
+    }
 
     pthread_join(blocking_keys_thread, NULL);
     pthread_join(drawing_thread, NULL);
