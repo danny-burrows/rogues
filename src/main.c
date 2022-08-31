@@ -23,10 +23,7 @@
 
 /*
 TODO: 
-- Fix debug menu & proper debug interface!
 - perror debug interface.
-- Possibly temporary buffer for post processing.
-- Lighting / Mock shaders!
 - Buildings and interiors.
 - Inventory system.
 - NPC's and followers.
@@ -53,10 +50,10 @@ Game game = {
     .control_surface = {1, 1, 1, 1, 0, 0, 0, 0},
     .player = {20, 5, 100.0f},
     .camera = {0},
-    .map = {0}
+    .map = {0},
+    .render_request = RENDER_REQUEST_GAME_STARTUP
 };
 
-int DRAW_PLEASE = 1;
 double TIME_FOR_60_FRAMES;
 double TIME_FOR_FRAME;
 double FPS;
@@ -110,12 +107,10 @@ void draw_debug_panel(void) {
     POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d", game.player.x, game.player.y);
     POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d", game.camera.x, game.camera.y);
     
-    
     POS_PRINTF(dbg_x + 40, dbg_y + 1, "TIME FOR 60 FRAMES: %f", TIME_FOR_60_FRAMES);
     POS_PRINTF(dbg_x + 40, dbg_y + 2, "TIME FOR FRAME: %f", TIME_FOR_FRAME);
     POS_PRINTF(dbg_x + 40, dbg_y + 3, "FPS: %f", FPS);
-    POS_PRINTF(dbg_x + 40, dbg_y + 4, "DRAW PLEASE: %d", DRAW_PLEASE);
-
+    POS_PRINTF(dbg_x + 40, dbg_y + 4, "Last Render Request: %d", game.render_request);
 
     // Day & Time Values.
     int day = daytime_function(daytime_counter);
@@ -242,8 +237,8 @@ void handle_resize(int term_w, int term_h)
 
     // Drawing Map
     camera_center_on_point(&game.camera, game.player.x, game.player.y, game.map.width, game.map.height);
-    // render_scene(&game.map, &game.camera, &game.view_port);
-    DRAW_PLEASE = 3;
+    
+    game.render_request = RENDER_REQUEST_WINDOW_RESIZE;
 }
 
 void process_input(const char input) 
@@ -288,8 +283,7 @@ void process_input(const char input)
             break;
     }
 
-    DRAW_PLEASE = 2;
-    // render_scene(&game.map, &game.camera, &game.view_port);
+    game.render_request = RENDER_REQUEST_PLAYER_INPUT;
 }
 
 
@@ -310,8 +304,7 @@ void *draw_thread(void *vargp)
 
         if (daytime_function(daytime_counter) != prev_day || 
                 game.time < 0.45f && !(daytime_counter % 7)) 
-            DRAW_PLEASE = 1;
-        //     render_scene(&game.map, &game.camera, &game.view_port);
+            game.render_request = RENDER_REQUEST_DAYTIME_UPDATE;
 
         prev_day = daytime_function(daytime_counter);
 
@@ -390,10 +383,10 @@ int main(void)
     while (game.running) {
 
         // Check for draw calls at a max of 60fps
-        while (DRAW_PLEASE == 0) {
+        while (game.render_request == RENDER_REQUEST_NOT_REQUESTED) {
             usleep(1000000 / 60);
         }
-        DRAW_PLEASE = 0;
+        game.render_request = RENDER_REQUEST_NOT_REQUESTED;
         
         // Calculate live FPS 
         if (i++ >= MAX_FRAMES) {
