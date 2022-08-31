@@ -12,7 +12,8 @@
 
 ## Test a debug build!
 ```bash
-cd rogues-dev
+git clone https://github.com/danny-burrows/rogues.git rogues
+cd rogues
 make config=debug
 ./rogues
 ```
