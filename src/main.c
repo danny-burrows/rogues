@@ -272,6 +272,22 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
                 },
             };
 
+            // Paint all the walls.
+            for (int i = 0; i < 8; i++) {
+                Point current_point;
+
+                current_point.x = x;
+                current_point.y = y;
+
+                // Current point is a wall
+                if (isPointBetweenPoints(current_point, walls[i].begin, walls[i].end)) {
+                    pxl->r = 164;
+                    pxl->g = 70;
+                    pxl->b = 104;
+                }
+            }
+
+            // Obscure everything that can't be seen behind walls
             for (int i = 0; i < 8; i++) {
                 Point player_point, current_point;
 
@@ -280,18 +296,13 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
                 current_point.x = x;
                 current_point.y = y;
 
-                // Wall is blocking our view of current_point
-                if (doIntersect(walls[i].begin, walls[i].end, player_point, current_point)) {
-                    pxl->r = 0;
-                    pxl->g = 0;
-                    pxl->b = 0;
-                }
-
-                // Current point is a wall
-                if (isPointBetweenPoints(current_point, walls[i].begin, walls[i].end)) {
-                    pxl->r = 164;
-                    pxl->g = 70;
-                    pxl->b = 104;
+                // Wall is blocking our view of current_point...
+                //              (and current_point isnt on the wall)
+                if (doIntersect(walls[i].begin, walls[i].end, player_point, current_point) && !isPointBetweenPoints(current_point, walls[i].begin, walls[i].end)) {
+                    pxl->r *= 0.2;
+                    pxl->g *= 0.2;
+                    pxl->b *= 0.2;
+                    break;
                 }
             }
 
