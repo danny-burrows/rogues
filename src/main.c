@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 #include "game.h"
 
@@ -55,6 +56,11 @@ Game game = {
     .map = {0}
 };
 
+int DRAW_PLEASE = 1;
+double TIME_FOR_60_FRAMES;
+double TIME_FOR_FRAME;
+double FPS;
+
 int prev_day = 0;
 int daytime_counter = 0;
 Draw_Buffer draw_buff;
@@ -101,8 +107,15 @@ void draw_debug_panel(void) {
     }
     
     POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
-    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d  ", game.player.x, game.player.y);
-    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d  ", game.camera.x, game.camera.y);
+    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d", game.player.x, game.player.y);
+    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d", game.camera.x, game.camera.y);
+    
+    
+    POS_PRINTF(dbg_x + 40, dbg_y + 1, "TIME FOR 60 FRAMES: %f", TIME_FOR_60_FRAMES);
+    POS_PRINTF(dbg_x + 40, dbg_y + 2, "TIME FOR FRAME: %f", TIME_FOR_FRAME);
+    POS_PRINTF(dbg_x + 40, dbg_y + 3, "FPS: %f", FPS);
+    POS_PRINTF(dbg_x + 40, dbg_y + 4, "DRAW PLEASE: %d", DRAW_PLEASE);
+
 
     // Day & Time Values.
     int day = daytime_function(daytime_counter);
@@ -229,7 +242,8 @@ void handle_resize(int term_w, int term_h)
 
     // Drawing Map
     camera_center_on_point(&game.camera, game.player.x, game.player.y, game.map.width, game.map.height);
-    render_scene(&game.map, &game.camera, &game.view_port);
+    // render_scene(&game.map, &game.camera, &game.view_port);
+    DRAW_PLEASE = 3;
 }
 
 void process_input(const char input) 
@@ -274,7 +288,8 @@ void process_input(const char input)
             break;
     }
 
-    render_scene(&game.map, &game.camera, &game.view_port);
+    DRAW_PLEASE = 2;
+    // render_scene(&game.map, &game.camera, &game.view_port);
 }
 
 
@@ -293,8 +308,9 @@ void *draw_thread(void *vargp)
 
         game.time = (double)daytime_function(daytime_counter) / 100.0f;
 
-        // if (daytime_function(daytime_counter) != prev_day || 
-        //         game.time < 0.45f && !(daytime_counter % 7)) 
+        if (daytime_function(daytime_counter) != prev_day || 
+                game.time < 0.45f && !(daytime_counter % 7)) 
+            DRAW_PLEASE = 1;
         //     render_scene(&game.map, &game.camera, &game.view_port);
 
         prev_day = daytime_function(daytime_counter);
@@ -364,6 +380,37 @@ int main(void)
     pthread_t drawing_thread, blocking_keys_thread;
     int iret2 = pthread_create(&drawing_thread, NULL, draw_thread, NULL);
     int iret1 = pthread_create(&blocking_keys_thread, NULL, blocking_keys, NULL);
+
+    // Main draw loop.
+    struct timeval mstart, mend;
+
+    int i = 0;
+    double MAX_FRAMES = 60.0;
+    gettimeofday(&mstart, NULL);
+    while (game.running) {
+
+        // Check for draw calls at a max of 60fps
+        while (DRAW_PLEASE == 0) {
+            usleep(1000000 / 60);
+        }
+        DRAW_PLEASE = 0;
+        
+        // Calculate live FPS 
+        if (i++ >= MAX_FRAMES) {
+            gettimeofday(&mend, NULL);
+
+            long seconds = (mend.tv_sec - mstart.tv_sec);
+            TIME_FOR_60_FRAMES = (((double)seconds * 1000000.0) + mend.tv_usec) - (mstart.tv_usec);
+            TIME_FOR_60_FRAMES /= 1000000.0;
+            TIME_FOR_FRAME = TIME_FOR_60_FRAMES / i;
+            FPS = (double)i / TIME_FOR_60_FRAMES;
+            
+            i = 0;
+            gettimeofday(&mstart, NULL);
+        }
+
+        render_scene(&game.map, &game.camera, &game.view_port);
+    }
 
     pthread_join(blocking_keys_thread, NULL);
     pthread_join(drawing_thread, NULL);
