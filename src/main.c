@@ -126,6 +126,38 @@ void draw_debug_panel(void) {
     fflush(stdout);
 }
 
+typedef struct _Point {
+    int x;
+    int y;
+} Point;
+
+bool isPointBetweenPoints(Point currPoint, Point point1, Point point2, double dist)
+{
+    int dxc = currPoint.x - point1.x;
+    int dyc = currPoint.y - point1.y;
+
+    int dxl = point2.x - point1.x;
+    int dyl = point2.y - point1.y;
+
+    int cross = dxc * dyl - dyc * dxl;
+
+    double threshold = 30 * dist * 2; 
+    if ((double)abs(cross) > threshold) 
+        return false;
+
+    // if (cross != 0)
+    //     return false;
+
+    if (abs(dxl) >= abs(dyl))
+    return dxl > 0 ? 
+        point1.x <= currPoint.x && currPoint.x <= point2.x :
+        point2.x <= currPoint.x && currPoint.x <= point1.x;
+    else
+    return dyl > 0 ? 
+        point1.y <= currPoint.y && currPoint.y <= point2.y :
+        point2.y <= currPoint.y && currPoint.y <= point1.y;
+}
+
 void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
     Draw_Buffer_Copy(&draw_buff, map, camera->x, camera->y);
@@ -140,6 +172,95 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
             dist = dist / (double)sqrt((game.player.y - camera->y + camera->vh) * (game.player.y - camera->y + camera->vh) * 4 + (game.player.x - camera->x + camera->vw) * (game.player.x - camera->x + camera->vw));
 
             Pixel *pxl = &draw_buff.data[y - camera->y][x - camera->x];
+
+            Point wall[55];
+            wall[0].x = 51; wall[0].y = 20;
+            wall[1].x = 52; wall[1].y = 20;
+            wall[2].x = 53; wall[2].y = 20;
+            wall[3].x = 54; wall[3].y = 20;
+            wall[4].x = 55; wall[4].y = 20;
+            wall[5].x = 56; wall[5].y = 20;
+            wall[6].x = 54; wall[6].y = 20;
+            wall[7].x = 55; wall[7].y = 20;
+
+            wall[8].x  = 51; wall[8].y  = 25;
+            wall[9].x  = 52; wall[9].y  = 25;
+            wall[10].x = 53; wall[10].y = 25;
+            wall[11].x = 54; wall[11].y = 25;
+            wall[12].x = 55; wall[12].y = 25;
+            wall[13].x = 56; wall[13].y = 25;
+            wall[14].x = 54; wall[14].y = 25;
+            wall[15].x = 55; wall[15].y = 25;
+            wall[16].x = 55; wall[16].y = 26;
+            wall[17].x = 55; wall[17].y = 27;
+            wall[18].x = 55; wall[18].y = 28;
+            wall[19].x = 55; wall[19].y = 19;
+            wall[20].x = 55; wall[20].y = 18;
+            wall[21].x = 55; wall[21].y = 17;
+            wall[22].x = 56; wall[22].y = 17;
+            wall[23].x = 57; wall[23].y = 17;
+            wall[24].x = 58; wall[24].y = 17;
+            wall[25].x = 59; wall[25].y = 17;
+            wall[26].x = 60; wall[26].y = 17;
+            wall[27].x = 61; wall[27].y = 17;
+            wall[28].x = 62; wall[28].y = 17;
+            wall[29].x = 63; wall[29].y = 17;
+            wall[30].x = 64; wall[30].y = 17;
+            wall[31].x = 65; wall[31].y = 17;
+            wall[32].x = 66; wall[32].y = 17;
+            wall[33].x = 55; wall[33].y = 28;
+            wall[34].x = 56; wall[34].y = 28;
+            wall[35].x = 57; wall[35].y = 28;
+            wall[36].x = 58; wall[36].y = 28;
+            wall[37].x = 59; wall[37].y = 28;
+            wall[38].x = 60; wall[38].y = 28;
+            wall[39].x = 61; wall[39].y = 28;
+            wall[40].x = 62; wall[40].y = 28;
+            wall[41].x = 63; wall[41].y = 28;
+            wall[42].x = 64; wall[42].y = 28;
+            wall[43].x = 65; wall[43].y = 28;
+            wall[44].x = 66; wall[44].y = 28;
+            wall[45].x = 66; wall[45].y = 18;
+            wall[46].x = 66; wall[46].y = 19;
+            wall[47].x = 66; wall[47].y = 20;
+            wall[48].x = 66; wall[48].y = 21;
+            wall[49].x = 66; wall[49].y = 22;
+            wall[50].x = 66; wall[50].y = 23;
+            wall[51].x = 66; wall[51].y = 24;
+            wall[52].x = 66; wall[52].y = 25;
+            wall[53].x = 66; wall[53].y = 26;
+            wall[54].x = 66; wall[54].y = 27;
+
+            for (int px = game.player.x; px < game.player.x + 3; px++) {
+            for (int py = game.player.y; py < game.player.y + 3; py++) {
+
+            for (int i = 0; i < 55; i++) {
+                Point curpoint;
+                curpoint.x = wall[i].x;
+                curpoint.y = wall[i].y;
+
+                Point p1;
+                p1.x = x;
+                p1.y = y;
+
+                Point p2;
+                p2.x = px;
+                p2.y = py;
+
+                bool between = isPointBetweenPoints(curpoint, p1, p2, dist);
+
+                if (x == wall[i].x && y == wall[i].y) {
+                    pxl->r = 50;
+                    pxl->g = 50;
+                    pxl->b = 55;
+                } else if (between) {
+                    pxl->r = 0;
+                    pxl->g = 0;
+                    pxl->b = 0;
+                }
+            }
+
+            }}
 
             // Day-Night with some distant fading.
             pxl->r = pxl->r * game.time * (1-dist);
