@@ -103,14 +103,16 @@ void draw_debug_panel(void) {
         POS_PRINTF(dbg_x, dbg_y + 2, "New game save created!");
     }
     
-    POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d", game.view_port.width, game.view_port.height);
-    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos: %d / %d", game.player.x, game.player.y);
-    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos: %d / %d", game.camera.x, game.camera.y);
+    // Leaving extra space to cover format overflows on || large numbers
+    //                                                  \/ 
+    POS_PRINTF(dbg_x, dbg_y + 3, "Viewport Size: %dx%d     ", game.view_port.width, game.view_port.height);
+    POS_PRINTF(dbg_x, dbg_y + 4, "Player Pos:    %d / %d   ", game.player.x, game.player.y);
+    POS_PRINTF(dbg_x, dbg_y + 5, "Camera Pos:    %d / %d   ", game.camera.x, game.camera.y);
     
-    POS_PRINTF(dbg_x + 40, dbg_y + 1, "TIME FOR 60 FRAMES: %f", TIME_FOR_60_FRAMES);
-    POS_PRINTF(dbg_x + 40, dbg_y + 2, "TIME FOR FRAME: %f", TIME_FOR_FRAME);
-    POS_PRINTF(dbg_x + 40, dbg_y + 3, "FPS: %f", FPS);
-    POS_PRINTF(dbg_x + 40, dbg_y + 4, "Last Render Request: %d", game.render_request);
+    POS_PRINTF(dbg_x + 40, dbg_y + 1, "FPS:                 %.2f    ", FPS);
+    POS_PRINTF(dbg_x + 40, dbg_y + 2, "FRAME RENDER TIME:   %.2fs   ", TIME_FOR_FRAME);
+    POS_PRINTF(dbg_x + 40, dbg_y + 3, "TIME FOR 60 FRAMES:  %.2fs   ", TIME_FOR_60_FRAMES);
+    POS_PRINTF(dbg_x + 40, dbg_y + 4, "Last Render Request: %d      ", game.render_request);
 
     // Day & Time Values.
     int day = daytime_function(daytime_counter);
@@ -375,11 +377,11 @@ int main(void)
     int iret1 = pthread_create(&blocking_keys_thread, NULL, blocking_keys, NULL);
 
     // Main draw loop.
-    struct timeval mstart, mend;
+    struct timeval fps_time_start, fps_time_end;
 
-    int i = 0;
-    double MAX_FRAMES = 60.0;
-    gettimeofday(&mstart, NULL);
+    int frame_count = 0;
+    const int FPS_INTERVAL = 60;
+    gettimeofday(&fps_time_start, NULL);
     while (game.running) {
 
         // Check for draw calls at a max of 60fps
@@ -387,19 +389,19 @@ int main(void)
             usleep(1000000 / 60);
         }
         game.render_request = RENDER_REQUEST_NOT_REQUESTED;
-        
-        // Calculate live FPS 
-        if (i++ >= MAX_FRAMES) {
-            gettimeofday(&mend, NULL);
 
-            long seconds = (mend.tv_sec - mstart.tv_sec);
-            TIME_FOR_60_FRAMES = (((double)seconds * 1000000.0) + mend.tv_usec) - (mstart.tv_usec);
+        // Calculate live FPS 
+        if (frame_count++ >= FPS_INTERVAL) {
+            gettimeofday(&fps_time_end, NULL);
+
+            long seconds = (fps_time_end.tv_sec - fps_time_start.tv_sec);
+            TIME_FOR_60_FRAMES = ((double)(seconds * 1000000) + fps_time_end.tv_usec) - (fps_time_start.tv_usec);
             TIME_FOR_60_FRAMES /= 1000000.0;
-            TIME_FOR_FRAME = TIME_FOR_60_FRAMES / i;
-            FPS = (double)i / TIME_FOR_60_FRAMES;
-            
-            i = 0;
-            gettimeofday(&mstart, NULL);
+            TIME_FOR_FRAME = TIME_FOR_60_FRAMES / frame_count;
+            FPS = (double)frame_count / TIME_FOR_60_FRAMES;
+
+            frame_count = 0;
+            gettimeofday(&fps_time_start, NULL);
         }
 
         render_scene(&game.map, &game.camera, &game.view_port);
