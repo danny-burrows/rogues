@@ -309,20 +309,54 @@ void handle_resize(int term_w, int term_h)
     game.render_request = RENDER_REQUEST_WINDOW_RESIZE;
 }
 
+bool player_collides_with_a_wall(Point point) {
+    // TODO: Implement this properly as square collisions
+
+    Point p = {0};
+
+    // // Check all the points that make up the player
+    for (int py = point.y; py < point.y + 3; py++) {
+        for (int px = point.x; px < point.x + 3; px++) {
+            p.x = px;
+            p.y = py;
+
+            // Check non of the above points collide with a wall
+            for (int i = 0; i < 8; i++) {
+                if (point_is_on_line_segment(p, game.walls[i].begin, game.walls[i].end)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+
+    return false;
+}
+
 void process_input(const char input) 
 {
+    Point p = {game.player.x, game.player.y};
+
     switch (input)
     {
         case KEY_W:
+            p.y--; if (player_collides_with_a_wall(p)) return;
+
             player_step_up(&game.player, &game.camera, &game.map);
             break;
         case KEY_A:
+            p.x--; if (player_collides_with_a_wall(p)) return;
+
             player_step_left(&game.player, &game.camera, &game.map);
             break;
         case KEY_S:
+            p.y++; if (player_collides_with_a_wall(p)) return;
+
             player_step_down(&game.player, &game.camera, &game.map);
             break;
         case KEY_D:
+            p.x++; if (player_collides_with_a_wall(p)) return;
+
             player_step_right(&game.player, &game.camera, &game.map);
             break;
         case KEY_I: // Top Extreme Teleport.
