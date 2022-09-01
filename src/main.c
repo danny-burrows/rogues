@@ -12,6 +12,7 @@
 #include "ui.h"
 #include "map.h"
 #include "keys.h"
+#include "utils.h"
 #include "debug.h"
 #include "camera.h"
 #include "player.h"
@@ -51,6 +52,36 @@ Game game = {
     .player = {20, 5, 100.0f},
     .camera = {0},
     .map = {0},
+    .walls = {
+        {
+            {.x = 40, .y = 10},
+            {.x = 54, .y = 10}
+        },
+        {
+            {.x = 40, .y = 20},
+            {.x = 54, .y = 20}
+        },
+        {
+            {.x = 49, .y = 5},
+            {.x = 49, .y = 10}
+        },
+        {
+            {.x = 49, .y = 20},
+            {.x = 49, .y = 25}
+        },
+        {
+            {.x = 49, .y = 5},
+            {.x = 80, .y = 5}
+        },
+        {
+            {.x = 49, .y = 25},
+            {.x = 80, .y = 25}
+        },
+        {
+            {.x = 80, .y = 5},
+            {.x = 80, .y = 25}
+        },
+    },
     .render_request = RENDER_REQUEST_GAME_STARTUP
 };
 
@@ -140,6 +171,41 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
             dist = dist / (double)sqrt((game.player.y - camera->y + camera->vh) * (game.player.y - camera->y + camera->vh) * 4 + (game.player.x - camera->x + camera->vw) * (game.player.x - camera->x + camera->vw));
 
             Pixel *pxl = &draw_buff.data[y - camera->y][x - camera->x];
+            
+            // Paint all the walls.
+            for (int i = 0; i < 8; i++) {
+                Point current_point;
+
+                current_point.x = x;
+                current_point.y = y;
+
+                // Current point is a wall
+                if (point_is_on_line_segment(current_point, game.walls[i].begin, game.walls[i].end)) {
+                    pxl->r = 164;
+                    pxl->g = 70;
+                    pxl->b = 104;
+                }
+            }
+
+            // Obscure everything that can't be seen behind walls
+            for (int i = 0; i < 8; i++) {
+                Point player_point, current_point;
+
+                player_point.x  = game.player.x + 1;
+                player_point.y  = game.player.y;
+                current_point.x = x;
+                current_point.y = y;
+
+                // Wall is blocking our view of current_point...
+                //              (and current_point isnt on the wall)
+                if (line_segments_intersect(game.walls[i].begin, game.walls[i].end, player_point, current_point) 
+                    && !point_is_on_line_segment(current_point, game.walls[i].begin, game.walls[i].end)) {
+                    pxl->r *= 0.2;
+                    pxl->g *= 0.2;
+                    pxl->b *= 0.2;
+                    break;
+                }
+            }
 
             // Day-Night with some distant fading.
             pxl->r = pxl->r * game.time * (1-dist);
@@ -243,20 +309,54 @@ void handle_resize(int term_w, int term_h)
     game.render_request = RENDER_REQUEST_WINDOW_RESIZE;
 }
 
+bool player_collides_with_a_wall(Point point) {
+    // TODO: Implement this properly as square collisions
+
+    Point p = {0};
+
+    // // Check all the points that make up the player
+    for (int py = point.y; py < point.y + 3; py++) {
+        for (int px = point.x; px < point.x + 3; px++) {
+            p.x = px;
+            p.y = py;
+
+            // Check non of the above points collide with a wall
+            for (int i = 0; i < 8; i++) {
+                if (point_is_on_line_segment(p, game.walls[i].begin, game.walls[i].end)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+
+    return false;
+}
+
 void process_input(const char input) 
 {
+    Point p = {game.player.x, game.player.y};
+
     switch (input)
     {
         case KEY_W:
+            p.y--; if (player_collides_with_a_wall(p)) return;
+
             player_step_up(&game.player, &game.camera, &game.map);
             break;
         case KEY_A:
+            p.x--; if (player_collides_with_a_wall(p)) return;
+
             player_step_left(&game.player, &game.camera, &game.map);
             break;
         case KEY_S:
+            p.y++; if (player_collides_with_a_wall(p)) return;
+
             player_step_down(&game.player, &game.camera, &game.map);
             break;
         case KEY_D:
+            p.x++; if (player_collides_with_a_wall(p)) return;
+
             player_step_right(&game.player, &game.camera, &game.map);
             break;
         case KEY_I: // Top Extreme Teleport.
