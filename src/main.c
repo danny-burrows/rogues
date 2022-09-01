@@ -52,6 +52,36 @@ Game game = {
     .player = {20, 5, 100.0f},
     .camera = {0},
     .map = {0},
+    .walls = {
+        {
+            {.x = 40, .y = 10},
+            {.x = 54, .y = 10}
+        },
+        {
+            {.x = 40, .y = 20},
+            {.x = 54, .y = 20}
+        },
+        {
+            {.x = 49, .y = 5},
+            {.x = 49, .y = 10}
+        },
+        {
+            {.x = 49, .y = 20},
+            {.x = 49, .y = 25}
+        },
+        {
+            {.x = 49, .y = 5},
+            {.x = 80, .y = 5}
+        },
+        {
+            {.x = 49, .y = 25},
+            {.x = 80, .y = 25}
+        },
+        {
+            {.x = 80, .y = 5},
+            {.x = 80, .y = 25}
+        },
+    },
     .render_request = RENDER_REQUEST_GAME_STARTUP
 };
 
@@ -126,10 +156,6 @@ void draw_debug_panel(void) {
 
     fflush(stdout);
 }
-typedef struct _Wall {
-    Point begin;
-    Point end;
-} Wall;
 
 void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
@@ -146,37 +172,6 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
             Pixel *pxl = &draw_buff.data[y - camera->y][x - camera->x];
             
-            Wall walls[8] = {
-                {
-                    {.x = 40, .y = 10},
-                    {.x = 54, .y = 10}
-                },
-                {
-                    {.x = 40, .y = 20},
-                    {.x = 54, .y = 20}
-                },
-                {
-                    {.x = 49, .y = 5},
-                    {.x = 49, .y = 10}
-                },
-                {
-                    {.x = 49, .y = 20},
-                    {.x = 49, .y = 25}
-                },
-                {
-                    {.x = 49, .y = 5},
-                    {.x = 80, .y = 5}
-                },
-                {
-                    {.x = 49, .y = 25},
-                    {.x = 80, .y = 25}
-                },
-                {
-                    {.x = 80, .y = 5},
-                    {.x = 80, .y = 25}
-                },
-            };
-
             // Paint all the walls.
             for (int i = 0; i < 8; i++) {
                 Point current_point;
@@ -185,7 +180,7 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
                 current_point.y = y;
 
                 // Current point is a wall
-                if (point_is_on_line_segment(current_point, walls[i].begin, walls[i].end)) {
+                if (point_is_on_line_segment(current_point, game.walls[i].begin, game.walls[i].end)) {
                     pxl->r = 164;
                     pxl->g = 70;
                     pxl->b = 104;
@@ -203,8 +198,8 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
                 // Wall is blocking our view of current_point...
                 //              (and current_point isnt on the wall)
-                if (line_segments_intersect(walls[i].begin, walls[i].end, player_point, current_point) 
-                    && !point_is_on_line_segment(current_point, walls[i].begin, walls[i].end)) {
+                if (line_segments_intersect(game.walls[i].begin, game.walls[i].end, player_point, current_point) 
+                    && !point_is_on_line_segment(current_point, game.walls[i].begin, game.walls[i].end)) {
                     pxl->r *= 0.2;
                     pxl->g *= 0.2;
                     pxl->b *= 0.2;
