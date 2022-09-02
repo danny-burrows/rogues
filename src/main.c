@@ -192,7 +192,7 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
                 Point player_point, current_point;
 
                 player_point.x  = game.player.x + 1;
-                player_point.y  = game.player.y;
+                player_point.y  = game.player.y + 1;
                 current_point.x = x;
                 current_point.y = y;
 
@@ -371,6 +371,9 @@ void process_input(const char input)
         case KEY_L: // Right Extreme Teleport.
             player_teleport(game.map.width - 4, game.map.height / 2, &game.player, &game.camera, &game.map, &game.view_port);
             break;
+        case KEY_N:
+            daytime_counter += 100;
+            break;
         case KEY_Q:
         case KEY_ESC:
             // Empty any remaining chars in stdin...
@@ -398,7 +401,7 @@ void *draw_thread(void *vargp)
     int width, height, pw, ph = {0};
 
     while (game.running) {
-        usleep(100000);
+        usleep(1000000);
 
         daytime_counter++;
 
