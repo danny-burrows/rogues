@@ -1,6 +1,6 @@
 #include "drawing.h"
 
-void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x, int source_start_y) 
+void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x, int source_start_y)
 {
     for (int y = 0; y < dest->height; y++) {
         for (int x = 0; x < dest->width; x++) {
@@ -54,28 +54,30 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y)
     return 0;
 }
 
-void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y) 
+void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
 {
     Pixel *pxl;
     for (int i = 0; i < buffer->height; i++)
     {
-        for (int j = 0; j < buffer->width; j++) 
-        {    
+        printf("\033[%d;%dH", draw_start_y + i, draw_start_x);
+
+        for (int j = 0; j < buffer->width; j++)
+        {
             pxl = &buffer->data[i][j];
             if (pxl->background) {
-                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
-                    pxl->r, 
-                    pxl->b, 
+                printf("\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c",
+                    pxl->r,
+                    pxl->b,
                     pxl->g,
-                    pxl->bg_r, 
-                    pxl->bg_b, 
-                    pxl->bg_g, 
+                    pxl->bg_r,
+                    pxl->bg_b,
+                    pxl->bg_g,
                     pxl->ch
                 );
             } else {
-                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
-                    pxl->r, 
-                    pxl->b, 
+                printf("\033[38;2;%hhu;%hhu;%hhum%c",
+                    pxl->r,
+                    pxl->b,
                     pxl->g,
                     pxl->ch
                 );
