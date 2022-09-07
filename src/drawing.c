@@ -19,6 +19,14 @@ void Draw_Buffer_Copy(Draw_Buffer *dest, Draw_Buffer *source, int source_start_x
                 dest_pxl->bg_r  = dest_pxl->r / 3;
                 dest_pxl->bg_g  = dest_pxl->g / 3;
                 dest_pxl->bg_b  = dest_pxl->b / 3;
+            } else {
+                dest_pxl->background = false;
+            }
+
+            if (src_pxl->bold) {
+                dest_pxl->bold = true;
+            } else {
+                dest_pxl->bold = false;
             }
         }
     }
@@ -62,23 +70,53 @@ void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
         for (int j = 0; j < buffer->width; j++) 
         {    
             pxl = &buffer->data[i][j];
-            if (pxl->background) {
-                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
-                    pxl->r, 
-                    pxl->b, 
-                    pxl->g,
-                    pxl->bg_r, 
-                    pxl->bg_b, 
-                    pxl->bg_g, 
-                    pxl->ch
-                );
-            } else {
-                printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
-                    pxl->r, 
-                    pxl->b, 
-                    pxl->g,
-                    pxl->ch
-                );
+
+            unsigned char s = (pxl->bold << 1) + pxl->background;
+            switch (s) {
+
+                case 1: // Background
+                    printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
+                        pxl->r, 
+                        pxl->b, 
+                        pxl->g,
+                        pxl->bg_r, 
+                        pxl->bg_b, 
+                        pxl->bg_g, 
+                        pxl->ch
+                    );
+                    break;
+
+                case 2: // Bold
+                    printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[1m%c\033[0m", draw_start_y + i, draw_start_x + j, 
+                        pxl->r, 
+                        pxl->b, 
+                        pxl->g,
+                        pxl->ch
+                    );
+                    break;
+
+                case 3: // Background & Bold
+                    printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum\033[1m%c\033[0m", draw_start_y + i, draw_start_x + j, 
+                        pxl->r, 
+                        pxl->b, 
+                        pxl->g,
+                        pxl->bg_r, 
+                        pxl->bg_b, 
+                        pxl->bg_g, 
+                        pxl->ch
+                    );
+                    break;
+
+                default: // No background & Not bold
+                    printf("\033[%d;%dH\033[38;2;%hhu;%hhu;%hhum%c", draw_start_y + i, draw_start_x + j, 
+                        pxl->r, 
+                        pxl->b, 
+                        pxl->g,
+                        pxl->ch
+                    );
+                    break;
+                    
+
             }
         }
     }

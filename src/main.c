@@ -255,7 +255,16 @@ void render_scene(Map * map, Camera * camera, Ui_Box * container) {
 
     Draw_Buffer_AddString(&draw_buff, player_texture, player_rel_x, player_rel_y);    
 
+    // Bold player
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            draw_buff.data[player_rel_y + y][player_rel_x + x].bold = true;    
+        }
+    }
+
     // The players stick!
+    draw_buff.data[player_rel_y][player_rel_x + 3].bold = true;
+    draw_buff.data[player_rel_y + 1][player_rel_x + 3].bold = true;
     if (game.time < 0.45f) {
         draw_buff.data[player_rel_y][player_rel_x + 3].r = 225 + (rand() % 30);
         draw_buff.data[player_rel_y][player_rel_x + 3].g = 87;
@@ -401,8 +410,6 @@ void *draw_thread(void *vargp)
     int width, height, pw, ph = {0};
 
     while (game.running) {
-        usleep(1000000);
-
         daytime_counter++;
 
         game.time = (double)daytime_function(daytime_counter) / 100.0f;
@@ -425,6 +432,8 @@ void *draw_thread(void *vargp)
             // Size has changed so redraw the frame...
             handle_resize(width, height);
         }
+
+        usleep(1000000);
     }
 }
 

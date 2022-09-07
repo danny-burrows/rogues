@@ -17,6 +17,7 @@ typedef struct {
     unsigned int bg_g;
     unsigned int bg_b;
     
+    bool bold;
     char  ch;
 } Pixel;
 
