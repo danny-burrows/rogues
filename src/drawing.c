@@ -57,6 +57,10 @@ int Draw_Buffer_AddString(Draw_Buffer *buffer, const char *string, int x, int y)
 void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
 {
     Pixel *pxl;
+
+    bool color_carryover = false;
+    unsigned int r, g, b, br, bg, bb = {0};
+
     for (int i = 0; i < buffer->height; i++)
     {
         printf("\033[%d;%dH", draw_start_y + i, draw_start_x);
@@ -64,7 +68,21 @@ void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
         for (int j = 0; j < buffer->width; j++)
         {
             pxl = &buffer->data[i][j];
-            if (pxl->background) {
+
+            if (r != pxl->r || g != pxl->g || b != pxl->b || br != pxl->bg_r || bg != pxl->bg_g || bb != pxl->bg_b) {
+                r = pxl->r;
+                g = pxl->g;
+                b = pxl->b;
+                br = pxl->bg_r;
+                bg = pxl->bg_g;
+                bb = pxl->bg_b;
+
+                color_carryover = false;
+            }
+
+            if (color_carryover) {
+                printf("%c", pxl->ch);
+            } else if (pxl->background) {
                 printf("\033[38;2;%hhu;%hhu;%hhum\033[48;2;%hhu;%hhu;%hhum%c",
                     pxl->r,
                     pxl->b,
@@ -82,6 +100,8 @@ void Draw_Buffer_Render(Draw_Buffer *buffer, int draw_start_x, int draw_start_y)
                     pxl->ch
                 );
             }
+
+            color_carryover = true;
         }
     }
     printf("\033[0m");
